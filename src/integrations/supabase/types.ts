@@ -14,7 +14,95 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      game_rooms: {
+        Row: {
+          created_at: string
+          game_id: string | null
+          guest_id: string | null
+          guest_name: string | null
+          host_id: string
+          host_name: string
+          id: string
+          room_code: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          game_id?: string | null
+          guest_id?: string | null
+          guest_name?: string | null
+          host_id: string
+          host_name?: string
+          id?: string
+          room_code: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          game_id?: string | null
+          guest_id?: string | null
+          guest_name?: string | null
+          host_id?: string
+          host_name?: string
+          id?: string
+          room_code?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_rooms_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      games: {
+        Row: {
+          ai_difficulty: string | null
+          board: string[]
+          completed_at: string | null
+          created_at: string
+          current_player: string
+          game_mode: string
+          id: string
+          moves: Json
+          player_o: string
+          player_x: string
+          room_code: string | null
+          winner: string | null
+        }
+        Insert: {
+          ai_difficulty?: string | null
+          board?: string[]
+          completed_at?: string | null
+          created_at?: string
+          current_player?: string
+          game_mode?: string
+          id?: string
+          moves?: Json
+          player_o?: string
+          player_x?: string
+          room_code?: string | null
+          winner?: string | null
+        }
+        Update: {
+          ai_difficulty?: string | null
+          board?: string[]
+          completed_at?: string | null
+          created_at?: string
+          current_player?: string
+          game_mode?: string
+          id?: string
+          moves?: Json
+          player_o?: string
+          player_x?: string
+          room_code?: string | null
+          winner?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
