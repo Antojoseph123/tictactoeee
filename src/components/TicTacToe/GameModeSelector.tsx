@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
-import { User, Bot, Globe, History, Trophy, LogIn, Settings } from "lucide-react";
+import { User, Bot, Globe, History, Trophy, LogIn, Settings, Gamepad2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { soundManager } from "@/utils/sounds";
 import type { Difficulty } from "@/utils/aiOpponent";
@@ -15,6 +16,12 @@ interface GameModeSelectorProps {
 
 const GameModeSelector = ({ onSelectMode, onAuthClick, onProfileClick }: GameModeSelectorProps) => {
   const { user, profile } = useAuth();
+  const navigate = useNavigate();
+
+  const handlePlayGames = () => {
+    soundManager.playClick();
+    navigate('/games');
+  };
 
   const modes = [
     {
@@ -49,6 +56,12 @@ const GameModeSelector = ({ onSelectMode, onAuthClick, onProfileClick }: GameMod
       description: 'Past games',
     },
   ];
+
+  const otherGamesButton = {
+    icon: Gamepad2,
+    title: 'Arcade Games',
+    description: 'Play Snake, Tetris & more',
+  };
 
   const difficulties: { id: Difficulty; label: string; color: string }[] = [
     { id: 'easy', label: 'Easy', color: 'text-green-400' },
@@ -156,6 +169,27 @@ const GameModeSelector = ({ onSelectMode, onAuthClick, onProfileClick }: GameMod
           </motion.div>
         ))}
       </div>
+
+      {/* Other Games Button */}
+      <motion.button
+        onClick={handlePlayGames}
+        className="glass-panel rounded-2xl p-4 w-full text-left hover:bg-primary/10 transition-colors border border-primary/20"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+            <otherGamesButton.icon className="w-5 h-5 text-primary" />
+          </div>
+          <div>
+            <span className="font-medium text-foreground">{otherGamesButton.title}</span>
+            <p className="text-xs text-muted-foreground">{otherGamesButton.description}</p>
+          </div>
+        </div>
+      </motion.button>
     </div>
   );
 };
