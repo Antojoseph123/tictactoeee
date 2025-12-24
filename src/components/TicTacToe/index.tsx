@@ -16,7 +16,7 @@ import ProfileEditor from "./ProfileEditor";
 import SoundToggle from "./SoundToggle";
 import ThemeToggle from "./ThemeToggle";
 import { soundManager } from "@/utils/sounds";
-import { getAIMove, type Difficulty } from "@/utils/aiOpponent";
+import { getAIMove, getMovePredictions, type Difficulty } from "@/utils/aiOpponent";
 import { useGameHistory, type GameRecord } from "@/hooks/useGameHistory";
 import { useOnlineGame } from "@/hooks/useOnlineGame";
 import { useAuth } from "@/contexts/AuthContext";
@@ -566,7 +566,7 @@ const TicTacToe = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
-            vs AI ({aiDifficulty})
+            vs AI ({aiDifficulty}) • Predictions shown
           </motion.p>
         )}
 
@@ -590,6 +590,8 @@ const TicTacToe = () => {
           board={board}
           winningLine={winningLine || line}
           onCellClick={handleCellClick}
+          predictions={gameMode === 'ai' && currentPlayer === 'X' && !gameOver ? getMovePredictions(board, aiDifficulty) : undefined}
+          showPredictions={gameMode === 'ai' && currentPlayer === 'X' && !gameOver}
         />
 
         <ScoreBoard scores={scores} />

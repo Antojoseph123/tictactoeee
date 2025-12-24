@@ -113,3 +113,44 @@ export const getAIMove = (board: (string | null)[], difficulty: Difficulty): num
       return getBestMove(board);
   }
 };
+
+// Get move predictions with scores for visualization
+export const getMovePredictions = (board: (string | null)[], difficulty: Difficulty): Map<number, number> => {
+  const availableMoves = getAvailableMoves(board);
+  const predictions = new Map<number, number>();
+  
+  if (availableMoves.length === 0) return predictions;
+
+  if (difficulty === 'easy') {
+    // Random distribution for easy mode
+    availableMoves.forEach(move => {
+      predictions.set(move, 1 / availableMoves.length);
+    });
+  } else {
+    // Calculate minimax scores for each move
+    const scores: { move: number; score: number }[] = [];
+    
+    for (const move of availableMoves) {
+      const newBoard = [...board];
+      newBoard[move] = 'O';
+      const score = minimax(newBoard, 0, false, -Infinity, Infinity);
+      scores.push({ move, score });
+    }
+
+    // Normalize scores to probabilities
+    const maxScore = Math.max(...scores.map(s => s.score));
+    const minScore = Math.min(...scores.map(s => s.score));
+    const range = maxScore - minScore || 1;
+
+    scores.forEach(({ move, score }) => {
+      // Higher score = more likely to be chosen
+      const normalized = (score - minScore) / range;
+      const probability = difficulty === 'medium' 
+        ? 0.3 + normalized * 0.4  // Medium: more spread
+        : 0.1 + normalized * 0.8; // Hard: concentrate on best
+      predictions.set(move, probability);
+    });
+  }
+
+  return predictions;
+};
