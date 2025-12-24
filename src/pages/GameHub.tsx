@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { 
   Gamepad2, Grid3X3, Puzzle, Zap, Target, 
-  Bird, Rocket, Brain, Hammer, Play, ArrowRight, ArrowLeft
+  Bird, Rocket, Brain, Hammer, Play, ArrowRight, ArrowLeft, ChevronDown
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -132,6 +132,12 @@ const GameHub = () => {
 
   const featuredGame = games.find((g) => g.featured);
 
+  const scrollToArcadeCollection = () => {
+    soundManager.playClick();
+    const el = document.getElementById("arcade-collection");
+    el?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   return (
     <div className="min-h-screen smooth-scroll">
       <DynamicIsland />
@@ -201,6 +207,15 @@ const GameHub = () => {
               Play Now
             </motion.button>
             <motion.button
+              onClick={scrollToArcadeCollection}
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-full glass-button text-foreground font-medium text-lg"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Arcade Collection
+              <ChevronDown className="w-5 h-5" />
+            </motion.button>
+            <motion.button
               onClick={() => navigate("/games")}
               className="inline-flex items-center gap-2 px-8 py-4 rounded-full glass-button text-foreground font-medium text-lg"
               whileHover={{ scale: 1.05 }}
@@ -213,7 +228,10 @@ const GameHub = () => {
         </motion.div>
 
         {/* Scroll indicator */}
-        <motion.div
+        <motion.button
+          type="button"
+          onClick={scrollToArcadeCollection}
+          aria-label="Scroll to arcade collection"
           className="absolute bottom-10 left-1/2 -translate-x-1/2"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -226,7 +244,7 @@ const GameHub = () => {
           >
             <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50" />
           </motion.div>
-        </motion.div>
+        </motion.button>
       </section>
 
       {/* Featured Game Section */}
@@ -270,7 +288,7 @@ const GameHub = () => {
       )}
 
       {/* Bento Grid Games */}
-      <section className="px-6 py-20">
+      <section id="arcade-collection" className="px-6 py-20">
         <motion.div
           className="max-w-6xl mx-auto"
           variants={containerVariants}
