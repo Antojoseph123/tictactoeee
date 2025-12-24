@@ -313,10 +313,18 @@ const GameHub = () => {
                   {game.tagline}
                 </p>
                 {game.available ? (
-                  <div className="flex items-center gap-2 text-primary text-sm font-medium">
-                    <span>Play</span>
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                  </div>
+                  <motion.button
+                    className={`w-full py-2.5 px-4 rounded-xl bg-gradient-to-r ${game.color} text-white font-medium text-sm flex items-center justify-center gap-2 shadow-lg`}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleGameClick(game);
+                    }}
+                  >
+                    <Play className="w-4 h-4 fill-current" />
+                    <span>Play Now</span>
+                  </motion.button>
                 ) : (
                   <span className="text-xs text-muted-foreground/70 font-medium">
                     Coming Soon
