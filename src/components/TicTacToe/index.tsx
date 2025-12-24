@@ -152,9 +152,20 @@ const TicTacToe = () => {
     setIsAIThinking(false);
   }, [aiDifficulty, checkWinner]);
 
-  // AI move logic - FIXED with refs
+  // AI move logic - trigger when it's AI's turn
   useEffect(() => {
-    if (gameMode !== 'ai' || gameOver || currentPlayer !== 'O' || isAIThinking) return;
+    if (gameMode !== 'ai') return;
+    if (currentPlayer !== 'O') return;
+    if (isAIThinking) return;
+    
+    // Check if game is over based on current board
+    const { winner } = checkWinner(board);
+    const isDraw = !winner && board.every(cell => cell !== null);
+    if (winner || isDraw) return;
+    
+    // Check if there are available moves
+    const hasEmptyCell = board.some(cell => cell === null);
+    if (!hasEmptyCell) return;
 
     setIsAIThinking(true);
     const delay = aiDifficulty === 'easy' ? 300 : aiDifficulty === 'medium' ? 200 : 150;
@@ -164,7 +175,7 @@ const TicTacToe = () => {
     }, delay);
 
     return () => clearTimeout(timer);
-  }, [currentPlayer, gameMode, gameOver, isAIThinking, aiDifficulty, makeAIMove]);
+  }, [currentPlayer, gameMode, board, isAIThinking, aiDifficulty, makeAIMove, checkWinner]);
 
   const handleCellClick = useCallback((index: number) => {
     if (board[index] || gameOver) return;
