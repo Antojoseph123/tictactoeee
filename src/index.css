@@ -2,212 +2,277 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+/* Apple SF Pro-inspired font stack */
+@import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
 
 @layer base {
   :root {
-    /* Light mode */
-    --background: 220 20% 97%;
-    --foreground: 240 20% 10%;
+    /* Apple Titanium Light Theme */
+    --background: 220 10% 96%;
+    --foreground: 220 15% 10%;
 
-    /* Glass surfaces - light */
-    --card: 240 20% 10%;
-    --card-foreground: 240 20% 10%;
+    /* Surfaces */
+    --card: 220 10% 98%;
+    --card-foreground: 220 15% 10%;
 
-    --popover: 220 20% 95%;
-    --popover-foreground: 240 20% 10%;
+    --popover: 220 10% 99%;
+    --popover-foreground: 220 15% 10%;
 
-    /* Primary accent - soft blue */
+    /* Apple Blue Primary */
     --primary: 210 100% 50%;
     --primary-foreground: 0 0% 100%;
     --primary-glow: 210 100% 60%;
 
-    /* Secondary accent - coral pink */
-    --secondary: 350 90% 55%;
+    /* Titanium Gold Accent */
+    --secondary: 35 80% 55%;
     --secondary-foreground: 0 0% 100%;
-    --secondary-glow: 350 90% 65%;
+    --secondary-glow: 35 80% 65%;
 
-    --muted: 220 15% 90%;
-    --muted-foreground: 220 10% 40%;
+    /* Titanium accent */
+    --titanium: 220 8% 50%;
+    --titanium-light: 220 8% 70%;
+    --titanium-dark: 220 10% 25%;
 
-    --accent: 280 80% 55%;
+    --muted: 220 10% 92%;
+    --muted-foreground: 220 8% 45%;
+
+    --accent: 280 70% 55%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 15% 80%;
-    --input: 220 15% 90%;
+    --border: 220 10% 88%;
+    --input: 220 10% 92%;
     --ring: 210 100% 50%;
 
-    --radius: 1.5rem;
+    --radius: 1rem;
 
-    /* Glass effect variables - light */
-    --glass-bg: 240 20% 10%;
-    --glass-border: 240 20% 10%;
-    --glass-shadow: 220 20% 70%;
+    /* Glass effects - light */
+    --glass-bg: 220 10% 50%;
+    --glass-border: 220 10% 70%;
+    --glass-shadow: 220 10% 20%;
 
-    /* Gradients - light */
-    --gradient-bg: linear-gradient(135deg, hsl(220 25% 95%) 0%, hsl(240 20% 92%) 50%, hsl(260 15% 95%) 100%);
+    /* Apple-style gradients */
+    --gradient-bg: linear-gradient(180deg, hsl(220 10% 96%) 0%, hsl(220 10% 94%) 100%);
+    --gradient-hero: radial-gradient(ellipse at top, hsl(220 15% 92%) 0%, hsl(220 10% 96%) 70%);
+    --gradient-titanium: linear-gradient(135deg, hsl(220 8% 65%) 0%, hsl(220 10% 45%) 100%);
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Shadows */
+    --shadow-sm: 0 1px 2px hsl(220 10% 20% / 0.05);
+    --shadow-md: 0 4px 12px hsl(220 10% 20% / 0.08);
+    --shadow-lg: 0 12px 40px hsl(220 10% 20% / 0.12);
+    --shadow-glow: 0 0 40px hsl(210 100% 50% / 0.15);
+
+    --sidebar-background: 220 10% 98%;
+    --sidebar-foreground: 220 15% 10%;
+    --sidebar-primary: 210 100% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 10% 94%;
+    --sidebar-accent-foreground: 220 15% 10%;
+    --sidebar-border: 220 10% 90%;
+    --sidebar-ring: 210 100% 50%;
   }
 
   .dark {
-    /* Dark gradient background */
-    --background: 240 20% 8%;
-    --foreground: 0 0% 98%;
+    /* Apple Titanium Dark Theme - Space Black */
+    --background: 220 15% 6%;
+    --foreground: 220 5% 95%;
 
-    /* Glass surfaces */
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 98%;
+    /* Surfaces */
+    --card: 220 12% 10%;
+    --card-foreground: 220 5% 95%;
 
-    --popover: 240 20% 12%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 220 12% 12%;
+    --popover-foreground: 220 5% 95%;
 
-    /* Primary accent - soft blue */
-    --primary: 210 100% 65%;
-    --primary-foreground: 240 20% 8%;
+    /* Apple Blue Primary */
+    --primary: 210 100% 60%;
+    --primary-foreground: 220 15% 6%;
     --primary-glow: 210 100% 70%;
 
-    /* Secondary accent - coral pink */
-    --secondary: 350 90% 65%;
-    --secondary-foreground: 0 0% 98%;
-    --secondary-glow: 350 90% 70%;
+    /* Titanium Gold Accent */
+    --secondary: 35 80% 50%;
+    --secondary-foreground: 220 15% 6%;
+    --secondary-glow: 35 80% 60%;
 
-    --muted: 240 15% 20%;
-    --muted-foreground: 240 10% 60%;
+    /* Titanium shades */
+    --titanium: 220 8% 40%;
+    --titanium-light: 220 8% 55%;
+    --titanium-dark: 220 10% 20%;
 
-    --accent: 280 80% 65%;
-    --accent-foreground: 0 0% 98%;
+    --muted: 220 12% 15%;
+    --muted-foreground: 220 8% 55%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --accent: 280 70% 60%;
+    --accent-foreground: 0 0% 100%;
 
-    --border: 0 0% 100%;
-    --input: 240 15% 20%;
-    --ring: 210 100% 65%;
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 0 0% 100%;
 
-    /* Glass effect variables */
-    --glass-bg: 0 0% 100%;
-    --glass-border: 0 0% 100%;
-    --glass-shadow: 240 20% 5%;
+    --border: 220 10% 18%;
+    --input: 220 12% 15%;
+    --ring: 210 100% 60%;
 
-    /* Gradients */
-    --gradient-bg: linear-gradient(135deg, hsl(240 25% 6%) 0%, hsl(260 30% 12%) 50%, hsl(280 25% 8%) 100%);
+    /* Glass effects - dark */
+    --glass-bg: 220 10% 100%;
+    --glass-border: 220 10% 100%;
+    --glass-shadow: 0 0% 0%;
 
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
+    /* Apple-style gradients - dark */
+    --gradient-bg: linear-gradient(180deg, hsl(220 15% 6%) 0%, hsl(220 18% 4%) 100%);
+    --gradient-hero: radial-gradient(ellipse at top, hsl(220 15% 10%) 0%, hsl(220 15% 4%) 70%);
+    --gradient-titanium: linear-gradient(135deg, hsl(220 8% 35%) 0%, hsl(220 10% 20%) 100%);
 
-  .dark {
-    --background: 240 20% 8%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 20% 12%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 210 100% 65%;
-    --primary-foreground: 240 20% 8%;
-    --secondary: 350 90% 65%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 15% 20%;
-    --muted-foreground: 240 10% 60%;
-    --accent: 280 80% 65%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 0 0% 100%;
-    --input: 240 15% 20%;
-    --ring: 210 100% 65%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Shadows - dark */
+    --shadow-sm: 0 1px 2px hsl(0 0% 0% / 0.3);
+    --shadow-md: 0 4px 12px hsl(0 0% 0% / 0.4);
+    --shadow-lg: 0 12px 40px hsl(0 0% 0% / 0.5);
+    --shadow-glow: 0 0 60px hsl(210 100% 50% / 0.2);
+
+    --sidebar-background: 220 12% 8%;
+    --sidebar-foreground: 220 5% 95%;
+    --sidebar-primary: 210 100% 60%;
+    --sidebar-primary-foreground: 220 15% 6%;
+    --sidebar-accent: 220 12% 12%;
+    --sidebar-accent-foreground: 220 5% 95%;
+    --sidebar-border: 220 10% 15%;
+    --sidebar-ring: 210 100% 60%;
   }
 }
 
 @layer base {
   * {
-    @apply border-border/10;
+    @apply border-border;
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    @apply bg-background text-foreground antialiased;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Segoe UI', Roboto, sans-serif;
     background: var(--gradient-bg);
     min-height: 100vh;
   }
 }
 
 @layer components {
-  .glass-panel {
-    @apply relative overflow-hidden rounded-2xl;
-    background: linear-gradient(135deg, hsl(var(--glass-bg) / 0.1) 0%, hsl(var(--glass-bg) / 0.05) 100%);
+  /* Dynamic Island Navigation */
+  .dynamic-island {
+    @apply fixed top-4 left-1/2 -translate-x-1/2 z-50;
+    @apply flex items-center gap-1 px-2 py-1.5;
+    @apply rounded-full;
+    background: hsl(var(--background) / 0.8);
     backdrop-filter: blur(40px) saturate(180%);
     -webkit-backdrop-filter: blur(40px) saturate(180%);
-    border: 1px solid hsl(var(--glass-border) / 0.1);
-    box-shadow: 0 8px 32px hsl(var(--glass-shadow) / 0.15);
+    border: 1px solid hsl(var(--border) / 0.5);
+    box-shadow: 
+      0 4px 24px hsl(var(--glass-shadow) / 0.15),
+      0 1px 2px hsl(var(--glass-shadow) / 0.1);
+  }
+
+  .dynamic-island-item {
+    @apply px-4 py-2 text-sm font-medium transition-all duration-300 rounded-full;
+    @apply text-muted-foreground hover:text-foreground;
+  }
+
+  .dynamic-island-item.active {
+    @apply text-foreground;
+    background: hsl(var(--primary) / 0.1);
+  }
+
+  /* Apple-style Glass Panel */
+  .glass-panel {
+    @apply relative overflow-hidden;
+    background: hsl(var(--card) / 0.6);
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    border: 1px solid hsl(var(--border) / 0.5);
+    box-shadow: var(--shadow-md);
   }
 
   .dark .glass-panel {
-    background: linear-gradient(135deg, hsl(var(--glass-bg) / 0.15) 0%, hsl(var(--glass-bg) / 0.05) 100%);
-    border: 1px solid hsl(var(--glass-border) / 0.15);
-    box-shadow: 0 8px 32px hsl(var(--glass-shadow) / 0.4);
+    background: hsl(var(--card) / 0.4);
+    border: 1px solid hsl(var(--border) / 0.3);
+    box-shadow: var(--shadow-lg);
   }
 
+  /* Bento Grid Card */
+  .bento-card {
+    @apply relative overflow-hidden rounded-3xl p-6;
+    @apply transition-all duration-500 ease-out;
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border) / 0.5);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .bento-card:hover {
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .dark .bento-card {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border) / 0.3);
+  }
+
+  /* Glass Tile for game cells */
   .glass-tile {
     @apply relative overflow-hidden transition-all duration-300 ease-out;
-    background: hsl(var(--glass-bg) / 0.08);
-    backdrop-filter: blur(20px) saturate(150%);
-    -webkit-backdrop-filter: blur(20px) saturate(150%);
-    border: 1px solid hsl(var(--glass-border) / 0.12);
-    box-shadow: 
-      0 4px 16px hsl(var(--glass-shadow) / 0.2),
-      inset 0 1px 0 hsl(var(--glass-border) / 0.1);
+    background: hsl(var(--muted) / 0.5);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid hsl(var(--border) / 0.5);
+    box-shadow: var(--shadow-sm);
   }
 
   .glass-tile:hover {
-    background: hsl(var(--glass-bg) / 0.12);
-    border-color: hsl(var(--glass-border) / 0.2);
+    background: hsl(var(--muted) / 0.7);
     transform: scale(1.02);
-    box-shadow: 
-      0 8px 32px hsl(var(--glass-shadow) / 0.3),
-      inset 0 1px 0 hsl(var(--glass-border) / 0.15);
+    box-shadow: var(--shadow-md);
   }
 
+  .dark .glass-tile {
+    background: hsl(var(--muted) / 0.3);
+    border: 1px solid hsl(var(--border) / 0.3);
+  }
+
+  /* Glass Button */
   .glass-button {
     @apply relative overflow-hidden transition-all duration-300 ease-out;
-    background: hsl(var(--glass-bg) / 0.1);
-    backdrop-filter: blur(20px) saturate(150%);
-    -webkit-backdrop-filter: blur(20px) saturate(150%);
-    border: 1px solid hsl(var(--glass-border) / 0.15);
+    background: hsl(var(--muted) / 0.5);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid hsl(var(--border) / 0.5);
   }
 
   .glass-button:hover {
-    background: hsl(var(--glass-bg) / 0.15);
-    border-color: hsl(var(--glass-border) / 0.25);
+    background: hsl(var(--muted) / 0.7);
     transform: translateY(-2px);
-    box-shadow: var(--shadow-glass);
+    box-shadow: var(--shadow-md);
   }
 
+  /* Apple Hero Text */
+  .hero-title {
+    @apply text-5xl sm:text-7xl lg:text-8xl font-semibold tracking-tight;
+    background: linear-gradient(180deg, hsl(var(--foreground)) 0%, hsl(var(--muted-foreground)) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-subtitle {
+    @apply text-xl sm:text-2xl lg:text-3xl font-light tracking-tight;
+    color: hsl(var(--muted-foreground));
+  }
+
+  /* Titanium Gradient Text */
+  .titanium-text {
+    background: var(--gradient-titanium);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Game Markers */
   .marker-x {
     color: hsl(var(--primary));
     text-shadow: 0 0 30px hsl(var(--primary) / 0.5);
@@ -218,12 +283,44 @@
     text-shadow: 0 0 30px hsl(var(--secondary) / 0.5);
   }
 
+  /* Glow Effects */
   .glow-primary {
-    box-shadow: var(--shadow-glow-primary);
+    box-shadow: var(--shadow-glow);
   }
 
   .glow-secondary {
-    box-shadow: var(--shadow-glow-secondary);
+    box-shadow: 0 0 40px hsl(var(--secondary) / 0.3);
+  }
+
+  /* Admin Panel Styles */
+  .admin-sidebar {
+    @apply fixed left-0 top-0 h-full w-64 z-40;
+    background: hsl(var(--sidebar-background));
+    border-right: 1px solid hsl(var(--sidebar-border));
+  }
+
+  .admin-content {
+    @apply ml-64 min-h-screen p-6;
+    background: var(--gradient-bg);
+  }
+
+  .admin-card {
+    @apply rounded-2xl p-6;
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* Feature Card for Bento */
+  .feature-badge {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium;
+    background: hsl(var(--primary) / 0.1);
+    color: hsl(var(--primary));
+  }
+
+  /* Smooth scrolling */
+  .smooth-scroll {
+    scroll-behavior: smooth;
   }
 }
 
@@ -246,6 +343,19 @@
 
   .animate-celebration {
     animation: celebration 0.6s ease-out;
+  }
+
+  .animate-fade-up {
+    animation: fade-up 0.8s ease-out forwards;
+  }
+
+  .animate-scale-in {
+    animation: scale-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+
+  /* Apple-style spring animation */
+  .spring-bounce {
+    transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 }
 
@@ -309,6 +419,28 @@
     transform: scale(1.02);
   }
   100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes fade-up {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scale-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
     transform: scale(1);
   }
 }
