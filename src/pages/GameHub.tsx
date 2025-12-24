@@ -127,9 +127,7 @@ const GameHub = () => {
 
   const handleGameClick = (game: Game) => {
     soundManager.playClick();
-    if (game.available) {
-      navigate(`/play/${game.id}`);
-    }
+    navigate(`/play/${game.id}`);
   };
 
   const featuredGame = games.find((g) => g.featured);
@@ -298,7 +296,7 @@ const GameHub = () => {
               <motion.div
                 key={game.id}
                 variants={itemVariants}
-                className={`bento-card cursor-pointer group ${!game.available ? "opacity-60" : ""}`}
+                className="bento-card cursor-pointer group"
                 onClick={() => handleGameClick(game)}
               >
                 <div 
@@ -312,24 +310,18 @@ const GameHub = () => {
                 <p className="text-sm text-muted-foreground mb-4">
                   {game.tagline}
                 </p>
-                {game.available ? (
-                  <motion.button
-                    className={`w-full py-2.5 px-4 rounded-xl bg-gradient-to-r ${game.color} text-white font-medium text-sm flex items-center justify-center gap-2 shadow-lg`}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleGameClick(game);
-                    }}
-                  >
-                    <Play className="w-4 h-4 fill-current" />
-                    <span>Play Now</span>
-                  </motion.button>
-                ) : (
-                  <span className="text-xs text-muted-foreground/70 font-medium">
-                    Coming Soon
-                  </span>
-                )}
+                <motion.button
+                  className={`w-full py-2.5 px-4 rounded-xl bg-gradient-to-r ${game.color} text-white font-medium text-sm flex items-center justify-center gap-2 shadow-lg`}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleGameClick(game);
+                  }}
+                >
+                  <Play className="w-4 h-4 fill-current" />
+                  <span>Play Now</span>
+                </motion.button>
               </motion.div>
             ))}
           </div>
