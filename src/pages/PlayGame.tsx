@@ -2,10 +2,30 @@ import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
 import TicTacToe from "@/components/TicTacToe";
+import { SnakeGame } from "@/components/games/Snake/SnakeGame";
+import { TetrisGame } from "@/components/games/Tetris/TetrisGame";
+import { BreakoutGame } from "@/components/games/Breakout/BreakoutGame";
+import { FlappyBirdGame } from "@/components/games/FlappyBird/FlappyBirdGame";
+import { PongGame } from "@/components/games/Pong/PongGame";
+import { SpaceInvadersGame } from "@/components/games/SpaceInvaders/SpaceInvadersGame";
+import { SimonSaysGame } from "@/components/games/SimonSays/SimonSaysGame";
+import { WhackAMoleGame } from "@/components/games/WhackAMole/WhackAMoleGame";
 import DynamicIsland from "@/components/layout/DynamicIsland";
 import ThemeToggle from "@/components/TicTacToe/ThemeToggle";
 import SoundToggle from "@/components/TicTacToe/SoundToggle";
 import { soundManager } from "@/utils/sounds";
+
+const gameComponents: Record<string, React.ComponentType> = {
+  tictactoe: TicTacToe,
+  snake: SnakeGame,
+  tetris: TetrisGame,
+  breakout: BreakoutGame,
+  flappybird: FlappyBirdGame,
+  pong: PongGame,
+  spaceinvaders: SpaceInvadersGame,
+  simonsays: SimonSaysGame,
+  whackamole: WhackAMoleGame,
+};
 
 const PlayGame = () => {
   const { gameId } = useParams();
@@ -13,13 +33,14 @@ const PlayGame = () => {
 
   const handleBack = () => {
     soundManager.playClick();
-    navigate("/");
+    navigate("/games");
   };
 
-  // Currently only TicTacToe is available
-  if (gameId !== "tictactoe") {
+  const GameComponent = gameId ? gameComponents[gameId] : null;
+
+  if (!GameComponent) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <DynamicIsland />
         <ThemeToggle />
         <SoundToggle />
@@ -30,10 +51,10 @@ const PlayGame = () => {
           animate={{ opacity: 1, y: 0 }}
         >
           <h1 className="text-4xl font-semibold text-foreground mb-4">
-            Coming Soon
+            Game Not Found
           </h1>
           <p className="text-muted-foreground mb-8">
-            This game is still in development.
+            This game doesn't exist yet.
           </p>
           <motion.button
             onClick={handleBack}
@@ -42,14 +63,14 @@ const PlayGame = () => {
             whileTap={{ scale: 0.95 }}
           >
             <ArrowLeft className="w-5 h-5" />
-            Back to GameHub
+            Back to Games
           </motion.button>
         </motion.div>
       </div>
     );
   }
 
-  return <TicTacToe />;
+  return <GameComponent />;
 };
 
 export default PlayGame;
