@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, LogOut } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import GameBoard from "./GameBoard";
 import GameStatus from "./GameStatus";
 import ScoreBoard from "./ScoreBoard";
@@ -9,11 +10,15 @@ import GameModeSelector, { type GameMode } from "./GameModeSelector";
 import OnlineLobby from "./OnlineLobby";
 import GameHistory from "./GameHistory";
 import ReplayViewer from "./ReplayViewer";
+import Leaderboard from "./Leaderboard";
 import SoundToggle from "./SoundToggle";
+import ThemeToggle from "./ThemeToggle";
 import { soundManager } from "@/utils/sounds";
 import { getAIMove, type Difficulty } from "@/utils/aiOpponent";
 import { useGameHistory, type GameRecord } from "@/hooks/useGameHistory";
 import { useOnlineGame } from "@/hooks/useOnlineGame";
+import { useAuth } from "@/contexts/AuthContext";
+import { triggerWinCelebration } from "@/utils/confetti";
 
 const WINNING_COMBINATIONS = [
   [0, 1, 2], [3, 4, 5], [6, 7, 8],
@@ -22,12 +27,16 @@ const WINNING_COMBINATIONS = [
 ];
 
 const TicTacToe = () => {
+  const navigate = useNavigate();
+  const { user, profile, updateStats, signOut } = useAuth();
+
   // Game state
   const [board, setBoard] = useState<(string | null)[]>(Array(9).fill(null));
   const [currentPlayer, setCurrentPlayer] = useState<'X' | 'O'>('X');
   const [scores, setScores] = useState({ X: 0, O: 0, draws: 0 });
   const [winningLine, setWinningLine] = useState<number[] | null>(null);
   const [moves, setMoves] = useState<{ index: number; player: string }[]>([]);
+  const [gameEnded, setGameEnded] = useState(false);
 
   // Mode state
   const [gameMode, setGameMode] = useState<GameMode | null>(null);
@@ -53,19 +62,34 @@ const TicTacToe = () => {
   const isDraw = !winner && board.every((cell) => cell !== null);
   const gameOver = !!winner || isDraw;
 
-  // Handle game end
+  // Handle game end - only trigger once
   useEffect(() => {
-    if (gameOver && gameMode && gameMode !== 'online' && gameMode !== 'history') {
+    if (gameOver && !gameEnded && gameMode && gameMode !== 'online' && gameMode !== 'history' && gameMode !== 'leaderboard') {
+      setGameEnded(true);
+      
       if (winner) {
         soundManager.playWin();
+        triggerWinCelebration();
         setWinningLine(line);
         setScores((prev) => ({
           ...prev,
           [winner as 'X' | 'O']: prev[winner as 'X' | 'O'] + 1,
         }));
+
+        // Update user stats if logged in
+        if (user && gameMode === 'ai') {
+          if (winner === 'X') {
+            updateStats('win');
+          } else {
+            updateStats('loss');
+          }
+        }
       } else if (isDraw) {
         soundManager.playDraw();
         setScores((prev) => ({ ...prev, draws: prev.draws + 1 }));
+        if (user && gameMode === 'ai') {
+          updateStats('draw');
+        }
       }
 
       // Save game to history
@@ -75,24 +99,27 @@ const TicTacToe = () => {
           moves,
           winner || 'draw',
           gameMode,
-          'Player 1',
+          profile?.username || 'Player 1',
           gameMode === 'ai' ? `AI (${aiDifficulty})` : 'Player 2',
           gameMode === 'ai' ? aiDifficulty : undefined
         );
       }
     }
-  }, [gameOver, winner, isDraw]);
+  }, [gameOver, gameEnded, winner, isDraw, gameMode, user, profile, moves, board, aiDifficulty, line, saveGame, updateStats]);
 
-  // AI move logic
+  // AI move logic - FASTER response
   useEffect(() => {
     if (gameMode !== 'ai' || gameOver || currentPlayer !== 'O' || isAIThinking) return;
 
     setIsAIThinking(true);
+    // Reduced delay for faster AI response
+    const delay = aiDifficulty === 'easy' ? 200 : aiDifficulty === 'medium' ? 150 : 100;
+    
     const timer = setTimeout(() => {
       const aiMoveIndex = getAIMove(board, aiDifficulty);
       handleCellClick(aiMoveIndex, true);
       setIsAIThinking(false);
-    }, 500);
+    }, delay);
 
     return () => clearTimeout(timer);
   }, [currentPlayer, gameMode, gameOver, isAIThinking, board, aiDifficulty]);
@@ -144,6 +171,7 @@ const TicTacToe = () => {
     setWinningLine(null);
     setMoves([]);
     setIsAIThinking(false);
+    setGameEnded(false);
   }, []);
 
   const handleResetScores = useCallback(() => {
@@ -168,13 +196,48 @@ const TicTacToe = () => {
     onlineGame.leaveRoom();
   }, [handleRestart, onlineGame]);
 
+  const handleAuthClick = useCallback(() => {
+    soundManager.playClick();
+    navigate('/auth');
+  }, [navigate]);
+
+  const handleSignOut = useCallback(async () => {
+    soundManager.playClick();
+    await signOut();
+  }, [signOut]);
+
+  // Render leaderboard
+  if (gameMode === 'leaderboard') {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8">
+        <BackgroundDecorations />
+        <ThemeToggle />
+        <SoundToggle />
+        <motion.div
+          className="relative z-10 w-full max-w-md space-y-6"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
+          <motion.h1
+            className="text-4xl sm:text-5xl font-light text-center text-foreground tracking-tight"
+            initial={{ opacity: 0, y: -30 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            Tic Tac Toe
+          </motion.h1>
+          <Leaderboard onBack={handleBackToMenu} />
+        </motion.div>
+      </div>
+    );
+  }
+
   // Render online game
   if (gameMode === 'online') {
-    // Show lobby if no room or waiting
     if (!onlineGame.room || onlineGame.room.status === 'waiting') {
       return (
         <div className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8">
           <BackgroundDecorations />
+          <ThemeToggle />
           <SoundToggle />
           <motion.div
             className="relative z-10 w-full max-w-md space-y-6"
@@ -202,7 +265,6 @@ const TicTacToe = () => {
       );
     }
 
-    // Show game
     if (onlineGame.game) {
       const onlineWinner = onlineGame.game.winner;
       const onlineIsDraw = onlineWinner === 'draw';
@@ -211,6 +273,7 @@ const TicTacToe = () => {
       return (
         <div className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8">
           <BackgroundDecorations />
+          <ThemeToggle />
           <SoundToggle />
           <motion.div
             className="relative z-10 w-full max-w-md space-y-6"
@@ -225,7 +288,6 @@ const TicTacToe = () => {
               Tic Tac Toe
             </motion.h1>
 
-            {/* Room info */}
             <motion.div
               className="glass-panel rounded-2xl p-3 text-center"
               initial={{ opacity: 0 }}
@@ -281,6 +343,7 @@ const TicTacToe = () => {
       return (
         <div className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8">
           <BackgroundDecorations />
+          <ThemeToggle />
           <SoundToggle />
           <motion.div
             className="relative z-10 w-full max-w-md space-y-6"
@@ -296,6 +359,7 @@ const TicTacToe = () => {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8">
         <BackgroundDecorations />
+        <ThemeToggle />
         <SoundToggle />
         <motion.div
           className="relative z-10 w-full max-w-md space-y-6"
@@ -326,7 +390,21 @@ const TicTacToe = () => {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8">
         <BackgroundDecorations />
+        <ThemeToggle />
         <SoundToggle />
+        
+        {user && (
+          <motion.button
+            onClick={handleSignOut}
+            className="glass-button rounded-full p-3 fixed top-4 right-16 z-20"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            title="Sign out"
+          >
+            <LogOut className="w-5 h-5 text-foreground" />
+          </motion.button>
+        )}
+
         <motion.div
           className="relative z-10 w-full max-w-md space-y-6"
           initial={{ opacity: 0 }}
@@ -339,7 +417,7 @@ const TicTacToe = () => {
           >
             Tic Tac Toe
           </motion.h1>
-          <GameModeSelector onSelectMode={handleSelectMode} />
+          <GameModeSelector onSelectMode={handleSelectMode} onAuthClick={handleAuthClick} />
         </motion.div>
       </div>
     );
@@ -349,6 +427,7 @@ const TicTacToe = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8">
       <BackgroundDecorations />
+      <ThemeToggle />
       <SoundToggle />
 
       <motion.div
@@ -374,7 +453,7 @@ const TicTacToe = () => {
           >
             Tic Tac Toe
           </motion.h1>
-          <div className="w-9" /> {/* Spacer for centering */}
+          <div className="w-9" />
         </div>
 
         {gameMode === 'ai' && (
@@ -397,9 +476,9 @@ const TicTacToe = () => {
           <motion.p
             className="text-center text-sm text-muted-foreground"
             animate={{ opacity: [0.5, 1, 0.5] }}
-            transition={{ duration: 1, repeat: Infinity }}
+            transition={{ duration: 0.5, repeat: Infinity }}
           >
-            AI is thinking...
+            AI thinking...
           </motion.p>
         )}
 
