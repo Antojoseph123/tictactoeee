@@ -2,8 +2,9 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { 
   Gamepad2, Grid3X3, Puzzle, Zap, Target, 
-  Bird, Rocket, Brain, Hammer, Play, ArrowRight
+  Bird, Rocket, Brain, Hammer, Play, ArrowRight, ArrowLeft
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { soundManager } from "@/utils/sounds";
 import DynamicIsland from "@/components/layout/DynamicIsland";
@@ -138,6 +139,16 @@ const GameHub = () => {
       <DynamicIsland />
       <ThemeToggle />
       <SoundToggle />
+      
+      {/* Back to Home Button */}
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => navigate('/')}
+        className="fixed top-4 left-4 z-50 rounded-full glass-button"
+      >
+        <ArrowLeft className="w-5 h-5" />
+      </Button>
 
       {/* Hero Section - Apple Style */}
       <section className="relative min-h-screen flex flex-col items-center justify-center px-6 pt-20">
