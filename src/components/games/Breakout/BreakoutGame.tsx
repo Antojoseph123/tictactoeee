@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Play, Pause, RotateCcw, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import confetti from 'canvas-confetti';
+import { HorizontalControls } from '../MobileControls';
 
 const CANVAS_WIDTH = 480;
 const CANVAS_HEIGHT = 600;
@@ -504,7 +505,13 @@ export function BreakoutGame() {
         </div>
       )}
 
-      <p className="text-sm text-muted-foreground">
+      {/* Mobile Controls */}
+      <HorizontalControls
+        onLeft={() => setPaddleX(prev => Math.max(0, prev - 30))}
+        onRight={() => setPaddleX(prev => Math.min(CANVAS_WIDTH - PADDLE_WIDTH, prev + 30))}
+      />
+
+      <p className="text-sm text-muted-foreground hidden md:block">
         Move mouse or touch to control paddle
       </p>
     </div>

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Play, Pause, RotateCcw, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import confetti from 'canvas-confetti';
+import { MobileControls } from '../MobileControls';
 
 const BOARD_WIDTH = 10;
 const BOARD_HEIGHT = 20;
@@ -375,10 +376,44 @@ export function TetrisGame() {
                 Restart
               </Button>
             </>
-          ) : null}
+        ) : null}
         </div>
 
-        <p className="text-sm text-muted-foreground text-center">
+        {/* Mobile Controls */}
+        <MobileControls
+          onUp={() => {
+            if (!currentPiece || !isPlaying || gameOver) return;
+            const rotated = rotatePiece(currentPiece);
+            if (isValidMove(rotated, board)) setCurrentPiece(rotated);
+          }}
+          onDown={() => dropPiece()}
+          onLeft={() => {
+            if (!currentPiece || !isPlaying || gameOver) return;
+            const newPiece = { ...currentPiece, x: currentPiece.x - 1 };
+            if (isValidMove(newPiece, board)) setCurrentPiece(newPiece);
+          }}
+          onRight={() => {
+            if (!currentPiece || !isPlaying || gameOver) return;
+            const newPiece = { ...currentPiece, x: currentPiece.x + 1 };
+            if (isValidMove(newPiece, board)) setCurrentPiece(newPiece);
+          }}
+          showRotate
+          onRotate={() => {
+            if (!currentPiece || !isPlaying || gameOver) return;
+            const rotated = rotatePiece(currentPiece);
+            if (isValidMove(rotated, board)) setCurrentPiece(rotated);
+          }}
+          onAction={() => {
+            if (!currentPiece || !isPlaying || gameOver) return;
+            let hardDropPiece = { ...currentPiece };
+            while (isValidMove({ ...hardDropPiece, y: hardDropPiece.y + 1 }, board)) {
+              hardDropPiece.y += 1;
+            }
+            setCurrentPiece(hardDropPiece);
+          }}
+        />
+
+        <p className="text-sm text-muted-foreground text-center hidden md:block">
           Arrow keys to move • Up/W to rotate • Space for hard drop
         </p>
       </div>

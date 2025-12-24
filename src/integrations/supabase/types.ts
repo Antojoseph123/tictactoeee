@@ -85,6 +85,36 @@ export type Database = {
           },
         ]
       }
+      game_scores: {
+        Row: {
+          created_at: string
+          game_id: string
+          id: string
+          level: number | null
+          player_name: string
+          score: number
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          game_id: string
+          id?: string
+          level?: number | null
+          player_name?: string
+          score?: number
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          game_id?: string
+          id?: string
+          level?: number | null
+          player_name?: string
+          score?: number
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       games: {
         Row: {
           ai_difficulty: string | null
