@@ -36,7 +36,7 @@ const games: Game[] = [
     tagline: "Neon glow. Endless chase.",
     icon: Zap,
     color: "from-green-500 to-emerald-400",
-    available: false,
+    available: true,
   },
   {
     id: "tetris",
@@ -44,7 +44,7 @@ const games: Game[] = [
     tagline: "Glass blocks. Perfect fit.",
     icon: Puzzle,
     color: "from-purple-500 to-pink-400",
-    available: false,
+    available: true,
   },
   {
     id: "breakout",
@@ -52,7 +52,7 @@ const games: Game[] = [
     tagline: "Physics-powered destruction.",
     icon: Target,
     color: "from-orange-500 to-red-400",
-    available: false,
+    available: true,
   },
   {
     id: "flappybird",
@@ -60,7 +60,7 @@ const games: Game[] = [
     tagline: "One tap. Infinite challenge.",
     icon: Bird,
     color: "from-yellow-500 to-orange-400",
-    available: false,
+    available: true,
   },
   {
     id: "pong",
@@ -68,7 +68,7 @@ const games: Game[] = [
     tagline: "Retro glory. Neon paddles.",
     icon: Gamepad2,
     color: "from-cyan-500 to-blue-400",
-    available: false,
+    available: true,
   },
   {
     id: "spaceinvaders",
@@ -76,15 +76,15 @@ const games: Game[] = [
     tagline: "Defend. Destroy. Survive.",
     icon: Rocket,
     color: "from-indigo-500 to-purple-400",
-    available: false,
+    available: true,
   },
   {
-    id: "simon",
+    id: "simonsays",
     title: "Simon Says",
     tagline: "Memory. Melody. Mastery.",
     icon: Brain,
     color: "from-pink-500 to-rose-400",
-    available: false,
+    available: true,
   },
   {
     id: "whackamole",
@@ -92,7 +92,7 @@ const games: Game[] = [
     tagline: "Quick reflexes required.",
     icon: Hammer,
     color: "from-amber-500 to-yellow-400",
-    available: false,
+    available: true,
   },
 ];
 
