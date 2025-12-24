@@ -36,7 +36,7 @@ const games: Game[] = [
     description: "Guide your snake through a neon world. Collect food, grow longer, and avoid colliding with yourself.",
     icon: Zap,
     color: "from-green-500 to-emerald-400",
-    available: false,
+    available: true,
   },
   {
     id: "tetris",
@@ -45,7 +45,7 @@ const games: Game[] = [
     description: "Stack falling tetrominoes with glass-morphic effects. Clear lines and achieve the highest score.",
     icon: Puzzle,
     color: "from-purple-500 to-pink-400",
-    available: false,
+    available: true,
   },
   {
     id: "breakout",
@@ -54,7 +54,7 @@ const games: Game[] = [
     description: "Bounce the ball to break all bricks. Features multi-hit blocks and realistic physics.",
     icon: Target,
     color: "from-orange-500 to-red-400",
-    available: false,
+    available: true,
   },
   {
     id: "flappybird",
@@ -63,7 +63,7 @@ const games: Game[] = [
     description: "Navigate through pipes with precise timing. Features parallax backgrounds and high score tracking.",
     icon: Bird,
     color: "from-yellow-500 to-orange-400",
-    available: false,
+    available: true,
   },
   {
     id: "pong",
@@ -72,7 +72,7 @@ const games: Game[] = [
     description: "The original arcade classic with glowing paddles and an AI opponent that adapts to your skill.",
     icon: Gamepad2,
     color: "from-cyan-500 to-blue-400",
-    available: false,
+    available: true,
   },
   {
     id: "spaceinvaders",
@@ -81,16 +81,16 @@ const games: Game[] = [
     description: "Protect Earth from waves of alien invaders. Features grid formations and escalating difficulty.",
     icon: Rocket,
     color: "from-indigo-500 to-purple-400",
-    available: false,
+    available: true,
   },
   {
-    id: "simon",
+    id: "simonsays",
     title: "Simon Says",
     tagline: "Memory. Melody. Mastery.",
     description: "Test your memory with color and sound sequences. Progressive difficulty challenges your limits.",
     icon: Brain,
     color: "from-pink-500 to-rose-400",
-    available: false,
+    available: true,
   },
   {
     id: "whackamole",
@@ -99,7 +99,7 @@ const games: Game[] = [
     description: "Test your reaction time as moles pop up randomly. Features 3D animations and hammer effects.",
     icon: Hammer,
     color: "from-amber-500 to-yellow-400",
-    available: false,
+    available: true,
   },
 ];
 
