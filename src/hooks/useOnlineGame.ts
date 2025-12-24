@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { soundManager } from '@/utils/sounds';
 import type { Json } from '@/integrations/supabase/types';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface GameRoom {
   id: string;
@@ -31,23 +32,14 @@ const generateRoomCode = () => {
   return code;
 };
 
-const getSessionId = () => {
-  let sessionId = localStorage.getItem('ttt_session_id');
-  if (!sessionId) {
-    sessionId = crypto.randomUUID();
-    localStorage.setItem('ttt_session_id', sessionId);
-  }
-  return sessionId;
-};
-
 export const useOnlineGame = () => {
+  const { user } = useAuth();
   const [room, setRoom] = useState<GameRoom | null>(null);
   const [game, setGame] = useState<GameState | null>(null);
   const [isHost, setIsHost] = useState(false);
   const [playerName, setPlayerName] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const sessionId = useRef(getSessionId());
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   // Cleanup function
@@ -64,6 +56,11 @@ export const useOnlineGame = () => {
 
   // Create a new room
   const createRoom = useCallback(async (hostName: string) => {
+    if (!user) {
+      setError('You must be logged in to create a room');
+      return;
+    }
+    
     setLoading(true);
     setError(null);
     
@@ -77,6 +74,7 @@ export const useOnlineGame = () => {
           player_x: hostName,
           game_mode: 'online',
           room_code: roomCode,
+          user_id: user.id,
         })
         .select()
         .single();
@@ -88,7 +86,7 @@ export const useOnlineGame = () => {
         .from('game_rooms')
         .insert({
           room_code: roomCode,
-          host_id: sessionId.current,
+          host_id: user.id,
           host_name: hostName,
           game_id: gameData.id,
           status: 'waiting',
@@ -118,10 +116,15 @@ export const useOnlineGame = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user]);
 
   // Join an existing room
   const joinRoom = useCallback(async (roomCode: string, guestName: string) => {
+    if (!user) {
+      setError('You must be logged in to join a room');
+      return;
+    }
+    
     setLoading(true);
     setError(null);
     
@@ -156,7 +159,7 @@ export const useOnlineGame = () => {
       const { error: updateRoomError } = await supabase
         .from('game_rooms')
         .update({
-          guest_id: sessionId.current,
+          guest_id: user.id,
           guest_name: guestName,
           status: 'playing',
         })
@@ -193,7 +196,7 @@ export const useOnlineGame = () => {
 
       setRoom({
         ...roomData,
-        guest_id: sessionId.current,
+        guest_id: user.id,
         guest_name: guestName,
         status: 'playing',
       } as GameRoom);
@@ -209,7 +212,7 @@ export const useOnlineGame = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user]);
 
   // Subscribe to realtime updates
   const subscribeToRoom = useCallback((roomCode: string) => {
