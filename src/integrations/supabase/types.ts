@@ -71,6 +71,7 @@ export type Database = {
           player_o: string
           player_x: string
           room_code: string | null
+          user_id: string | null
           winner: string | null
         }
         Insert: {
@@ -85,6 +86,7 @@ export type Database = {
           player_o?: string
           player_x?: string
           room_code?: string | null
+          user_id?: string | null
           winner?: string | null
         }
         Update: {
@@ -99,7 +101,47 @@ export type Database = {
           player_o?: string
           player_x?: string
           room_code?: string | null
+          user_id?: string | null
           winner?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          draws: number
+          games_played: number
+          id: string
+          losses: number
+          updated_at: string
+          user_id: string
+          username: string
+          wins: number
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          draws?: number
+          games_played?: number
+          id?: string
+          losses?: number
+          updated_at?: string
+          user_id: string
+          username: string
+          wins?: number
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          draws?: number
+          games_played?: number
+          id?: string
+          losses?: number
+          updated_at?: string
+          user_id?: string
+          username?: string
+          wins?: number
         }
         Relationships: []
       }
@@ -108,7 +150,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      update_profile_stats: {
+        Args: { p_result: string; p_user_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
