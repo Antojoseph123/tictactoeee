@@ -1,16 +1,19 @@
 import { motion } from "framer-motion";
-import { User, Bot, Globe, History, Trophy, LogIn } from "lucide-react";
+import { User, Bot, Globe, History, Trophy, LogIn, Settings } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { soundManager } from "@/utils/sounds";
 import type { Difficulty } from "@/utils/aiOpponent";
+import { AVATARS } from "./avatars";
 
-export type GameMode = 'local' | 'ai' | 'online' | 'history' | 'leaderboard';
+export type GameMode = 'local' | 'ai' | 'online' | 'history' | 'leaderboard' | 'friends' | 'profile';
 
 interface GameModeSelectorProps {
   onSelectMode: (mode: GameMode, difficulty?: Difficulty) => void;
   onAuthClick: () => void;
+  onProfileClick: () => void;
 }
 
-const GameModeSelector = ({ onSelectMode, onAuthClick }: GameModeSelectorProps) => {
+const GameModeSelector = ({ onSelectMode, onAuthClick, onProfileClick }: GameModeSelectorProps) => {
   const { user, profile } = useAuth();
 
   const modes = [
@@ -63,22 +66,33 @@ const GameModeSelector = ({ onSelectMode, onAuthClick }: GameModeSelectorProps) 
       >
         {user && profile ? (
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                <User className="w-5 h-5 text-primary" />
+            <button
+              onClick={() => { soundManager.playClick(); onProfileClick(); }}
+              className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+            >
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center text-2xl">
+                {AVATARS[profile.avatar_index || 0]}
               </div>
-              <div>
+              <div className="text-left">
                 <p className="font-medium text-foreground">{profile.username}</p>
                 <p className="text-xs text-muted-foreground">
                   {profile.wins}W - {profile.losses}L - {profile.draws}D
                 </p>
               </div>
-            </div>
+            </button>
+            <motion.button
+              onClick={() => { soundManager.playClick(); onProfileClick(); }}
+              className="glass-button rounded-lg p-2"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
+              <Settings className="w-4 h-4 text-muted-foreground" />
+            </motion.button>
           </div>
         ) : (
           <motion.button
             onClick={onAuthClick}
-            className="w-full flex items-center justify-center gap-2 text-primary"
+            className="w-full flex items-center justify-center gap-2 text-primary py-2"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >

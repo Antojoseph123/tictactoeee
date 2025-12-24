@@ -7,6 +7,7 @@ interface Profile {
   user_id: string;
   username: string;
   avatar_url: string | null;
+  avatar_index: number;
   wins: number;
   losses: number;
   draws: number;
@@ -20,6 +21,7 @@ interface AuthContextType {
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, username: string) => Promise<{ error: Error | null }>;
+  signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   updateStats: (result: 'win' | 'loss' | 'draw') => Promise<void>;
   refreshProfile: () => Promise<void>;
@@ -121,6 +123,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  const signInWithGoogle = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/`,
+      },
+    });
+    if (error) throw error;
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
     setUser(null);
@@ -150,6 +162,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       loading,
       signIn,
       signUp,
+      signInWithGoogle,
       signOut,
       updateStats,
       refreshProfile,
