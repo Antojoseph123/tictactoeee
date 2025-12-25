@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { 
   Grid3X3, Puzzle, Zap, Target, Bird, Gamepad2, 
-  Rocket, Brain, Hammer, ArrowRight, Lock
+  Rocket, Brain, Hammer, ArrowRight, Lock, LayoutGrid
 } from "lucide-react";
 import DynamicIsland from "@/components/layout/DynamicIsland";
 import ThemeToggle from "@/components/TicTacToe/ThemeToggle";
@@ -27,6 +27,15 @@ const games: Game[] = [
     description: "The timeless game of X's and O's with AI opponents, online multiplayer, and beautiful glass-morphic design.",
     icon: Grid3X3,
     color: "from-blue-500 to-cyan-400",
+    available: true,
+  },
+  {
+    id: "ultimatetictactoe",
+    title: "Ultimate Tic Tac Toe",
+    tagline: "Strategy within strategy.",
+    description: "A mind-bending twist on the classic. Win small boards to claim them, then win three in a row to dominate.",
+    icon: LayoutGrid,
+    color: "from-violet-500 to-fuchsia-400",
     available: true,
   },
   {

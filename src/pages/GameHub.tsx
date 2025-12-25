@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { 
   Gamepad2, Grid3X3, Puzzle, Zap, Target, 
-  Bird, Rocket, Brain, Hammer, Play, ArrowRight, ArrowLeft, ChevronDown
+  Bird, Rocket, Brain, Hammer, Play, ArrowRight, ArrowLeft, ChevronDown, LayoutGrid
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -30,6 +30,14 @@ const games: Game[] = [
     color: "from-blue-500 to-cyan-400",
     available: true,
     featured: true,
+  },
+  {
+    id: "ultimatetictactoe",
+    title: "Ultimate Tic Tac Toe",
+    tagline: "Strategy within strategy.",
+    icon: LayoutGrid,
+    color: "from-violet-500 to-fuchsia-400",
+    available: true,
   },
   {
     id: "snake",
@@ -345,7 +353,7 @@ const GameHub = () => {
           viewport={{ once: true }}
         >
           {[
-            { label: "Games", value: "9" },
+            { label: "Games", value: "10" },
             { label: "Players", value: "1K+" },
             { label: "Matches", value: "50K+" },
             { label: "Countries", value: "25+" },

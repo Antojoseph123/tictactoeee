@@ -10,6 +10,7 @@ import { PongGame } from "@/components/games/Pong/PongGame";
 import { SpaceInvadersGame } from "@/components/games/SpaceInvaders/SpaceInvadersGame";
 import { SimonSaysGame } from "@/components/games/SimonSays/SimonSaysGame";
 import { WhackAMoleGame } from "@/components/games/WhackAMole/WhackAMoleGame";
+import { UltimateTicTacToeGame } from "@/components/games/UltimateTicTacToe/UltimateTicTacToeGame";
 import DynamicIsland from "@/components/layout/DynamicIsland";
 import ThemeToggle from "@/components/TicTacToe/ThemeToggle";
 import SoundToggle from "@/components/TicTacToe/SoundToggle";
@@ -17,6 +18,7 @@ import { soundManager } from "@/utils/sounds";
 
 const gameComponents: Record<string, React.ComponentType> = {
   tictactoe: TicTacToe,
+  ultimatetictactoe: UltimateTicTacToeGame,
   snake: SnakeGame,
   tetris: TetrisGame,
   breakout: BreakoutGame,
