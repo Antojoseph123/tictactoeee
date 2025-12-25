@@ -3,7 +3,11 @@ import { motion } from "framer-motion";
 import { Volume2, VolumeX } from "lucide-react";
 import { soundManager } from "@/utils/sounds";
 
-const SoundToggle = () => {
+interface SoundToggleProps {
+  className?: string;
+}
+
+const SoundToggle = ({ className }: SoundToggleProps) => {
   const [enabled, setEnabled] = useState(true);
 
   useEffect(() => {
@@ -26,10 +30,12 @@ const SoundToggle = () => {
     }
   };
 
+  const defaultClass = "glass-button rounded-full p-3 fixed top-4 right-4 z-20";
+
   return (
     <motion.button
       onClick={toggle}
-      className="glass-button rounded-full p-3 fixed top-4 right-4 z-20"
+      className={className || defaultClass}
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.9 }}
       title={enabled ? 'Mute sounds' : 'Enable sounds'}

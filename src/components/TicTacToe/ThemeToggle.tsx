@@ -3,7 +3,11 @@ import { Sun, Moon } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { soundManager } from "@/utils/sounds";
 
-const ThemeToggle = () => {
+interface ThemeToggleProps {
+  className?: string;
+}
+
+const ThemeToggle = ({ className }: ThemeToggleProps) => {
   const { theme, toggleTheme } = useTheme();
 
   const handleToggle = () => {
@@ -11,10 +15,12 @@ const ThemeToggle = () => {
     toggleTheme();
   };
 
+  const defaultClass = "glass-button rounded-full p-3 fixed top-4 left-4 z-20";
+
   return (
     <motion.button
       onClick={handleToggle}
-      className="glass-button rounded-full p-3 fixed top-4 left-4 z-20"
+      className={className || defaultClass}
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.9 }}
       title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}

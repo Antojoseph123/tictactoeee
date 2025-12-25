@@ -84,8 +84,8 @@ const PlayGame = () => {
         </motion.button>
         
         <div className="flex items-center gap-2">
-          <SoundToggle />
-          <ThemeToggle />
+          <SoundToggle className="glass-button rounded-full p-3" />
+          <ThemeToggle className="glass-button rounded-full p-3" />
         </div>
       </div>
 
