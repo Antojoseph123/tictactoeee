@@ -128,7 +128,17 @@ const TicTacToe = () => {
     const currentBoard = boardRef.current;
     const isGameOver = gameOverRef.current;
     
-    if (isGameOver) return;
+    if (isGameOver) {
+      setIsAIThinking(false);
+      return;
+    }
+    
+    // Check if there are empty cells
+    const hasEmptyCell = currentBoard.some(cell => cell === null);
+    if (!hasEmptyCell) {
+      setIsAIThinking(false);
+      return;
+    }
     
     try {
       const aiMoveIndex = getAIMove(currentBoard, aiDifficulty);
@@ -147,34 +157,38 @@ const TicTacToe = () => {
       }
     } catch (error) {
       console.error('AI move error:', error);
+    } finally {
+      setIsAIThinking(false);
     }
-    
-    setIsAIThinking(false);
   }, [aiDifficulty, checkWinner]);
 
   // AI move logic - trigger when it's AI's turn
   useEffect(() => {
     if (gameMode !== 'ai') return;
     if (currentPlayer !== 'O') return;
-    if (isAIThinking) return;
     
     // Check if game is over based on current board
     const { winner } = checkWinner(board);
-    const isDraw = !winner && board.every(cell => cell !== null);
-    if (winner || isDraw) return;
+    const boardIsFull = board.every(cell => cell !== null);
+    if (winner || boardIsFull) return;
     
     // Check if there are available moves
     const hasEmptyCell = board.some(cell => cell === null);
     if (!hasEmptyCell) return;
 
+    // Prevent duplicate AI moves
+    if (isAIThinking) return;
+    
     setIsAIThinking(true);
-    const delay = aiDifficulty === 'easy' ? 300 : aiDifficulty === 'medium' ? 200 : 150;
+    const delay = aiDifficulty === 'easy' ? 500 : aiDifficulty === 'medium' ? 400 : 300;
     
     const timer = setTimeout(() => {
       makeAIMove();
     }, delay);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+    };
   }, [currentPlayer, gameMode, board, isAIThinking, aiDifficulty, makeAIMove, checkWinner]);
 
   const handleCellClick = useCallback((index: number) => {
