@@ -70,7 +70,31 @@ const PlayGame = () => {
     );
   }
 
-  return <GameComponent />;
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Header with controls */}
+      <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between p-4">
+        <motion.button
+          onClick={handleBack}
+          className="p-3 rounded-full glass-button text-foreground"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <ArrowLeft className="w-6 h-6" />
+        </motion.button>
+        
+        <div className="flex items-center gap-2">
+          <SoundToggle />
+          <ThemeToggle />
+        </div>
+      </div>
+
+      {/* Game content with top padding for header */}
+      <div className="pt-20">
+        <GameComponent />
+      </div>
+    </div>
+  );
 };
 
 export default PlayGame;
