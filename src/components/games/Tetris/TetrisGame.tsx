@@ -7,7 +7,24 @@ import { MobileControls } from '../MobileControls';
 
 const BOARD_WIDTH = 10;
 const BOARD_HEIGHT = 20;
-const CELL_SIZE = 24;
+
+// Responsive cell size
+const useResponsiveCellSize = () => {
+  const [cellSize, setCellSize] = useState(24);
+  
+  useEffect(() => {
+    const updateSize = () => {
+      const maxBoardWidth = Math.min(window.innerWidth - 180, 240);
+      setCellSize(Math.floor(maxBoardWidth / BOARD_WIDTH));
+    };
+    
+    updateSize();
+    window.addEventListener('resize', updateSize);
+    return () => window.removeEventListener('resize', updateSize);
+  }, []);
+  
+  return cellSize;
+};
 
 const TETROMINOS = {
   I: { shape: [[1, 1, 1, 1]], color: 'from-cyan-400 to-cyan-600' },
@@ -38,6 +55,7 @@ const getRandomTetromino = (): TetrominoType => {
 };
 
 export function TetrisGame() {
+  const CELL_SIZE = useResponsiveCellSize();
   const [board, setBoard] = useState<Board>(createEmptyBoard());
   const [currentPiece, setCurrentPiece] = useState<Piece | null>(null);
   const [nextPiece, setNextPiece] = useState<TetrominoType>(getRandomTetromino());
