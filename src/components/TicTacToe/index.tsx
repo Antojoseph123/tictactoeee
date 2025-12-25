@@ -48,10 +48,12 @@ const TicTacToe = () => {
   const [showFriends, setShowFriends] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
 
-  // Ref for AI move to avoid stale closures
+  // Refs for AI move to avoid stale closures and duplicate timers
   const boardRef = useRef(board);
   const currentPlayerRef = useRef(currentPlayer);
   const gameOverRef = useRef(false);
+  const aiTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const aiPendingRef = useRef(false);
 
   // Hooks
   const { games, loading: historyLoading, saveGame, clearHistory } = useGameHistory();
@@ -162,34 +164,8 @@ const TicTacToe = () => {
     }
   }, [aiDifficulty, checkWinner]);
 
-  // AI move logic - trigger when it's AI's turn
-  useEffect(() => {
-    if (gameMode !== 'ai') return;
-    if (currentPlayer !== 'O') return;
-    
-    // Check if game is over based on current board
-    const { winner } = checkWinner(board);
-    const boardIsFull = board.every(cell => cell !== null);
-    if (winner || boardIsFull) return;
-    
-    // Check if there are available moves
-    const hasEmptyCell = board.some(cell => cell === null);
-    if (!hasEmptyCell) return;
+  // AI move is scheduled directly after the player's move in AI mode (see handleCellClick)
 
-    // Prevent duplicate AI moves
-    if (isAIThinking) return;
-    
-    setIsAIThinking(true);
-    const delay = aiDifficulty === 'easy' ? 500 : aiDifficulty === 'medium' ? 400 : 300;
-    
-    const timer = setTimeout(() => {
-      makeAIMove();
-    }, delay);
-
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [currentPlayer, gameMode, board, isAIThinking, aiDifficulty, makeAIMove, checkWinner]);
 
   const handleCellClick = useCallback((index: number) => {
     if (board[index] || gameOver) return;
@@ -203,10 +179,31 @@ const TicTacToe = () => {
     soundManager.playMoveX();
 
     const result = checkWinner(newBoard);
-    if (!result.winner && !newBoard.every(cell => cell !== null)) {
-      setCurrentPlayer((prev) => (prev === 'X' ? 'O' : 'X'));
+    const boardFull = newBoard.every(cell => cell !== null);
+
+    if (!result.winner && !boardFull) {
+      if (gameMode === 'ai') {
+        // Schedule AI response deterministically after the player's move
+        setCurrentPlayer('O');
+        setIsAIThinking(true);
+
+        aiPendingRef.current = true;
+        if (aiTimerRef.current) {
+          clearTimeout(aiTimerRef.current);
+          aiTimerRef.current = null;
+        }
+
+        const delay = aiDifficulty === 'easy' ? 500 : aiDifficulty === 'medium' ? 400 : 300;
+        aiTimerRef.current = setTimeout(() => {
+          aiTimerRef.current = null;
+          aiPendingRef.current = false;
+          makeAIMove();
+        }, delay);
+      } else {
+        setCurrentPlayer((prev) => (prev === 'X' ? 'O' : 'X'));
+      }
     }
-  }, [board, currentPlayer, gameOver, checkWinner, gameMode]);
+  }, [board, currentPlayer, gameOver, checkWinner, gameMode, aiDifficulty, makeAIMove]);
 
   // Online game move handler
   const handleOnlineMove = useCallback(async (index: number) => {
@@ -228,6 +225,13 @@ const TicTacToe = () => {
 
   const handleRestart = useCallback(() => {
     soundManager.playClick();
+
+    if (aiTimerRef.current) {
+      clearTimeout(aiTimerRef.current);
+      aiTimerRef.current = null;
+    }
+    aiPendingRef.current = false;
+
     setBoard(Array(9).fill(null));
     setCurrentPlayer('X');
     setWinningLine(null);
