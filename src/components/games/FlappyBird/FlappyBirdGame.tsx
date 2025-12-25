@@ -6,11 +6,11 @@ import { Button } from '@/components/ui/button';
 const CANVAS_WIDTH = 400;
 const CANVAS_HEIGHT = 600;
 const BIRD_SIZE = 30;
-const GRAVITY = 0.5;
-const JUMP_FORCE = -10;
+const GRAVITY = 0.35;
+const JUMP_FORCE = -8;
 const PIPE_WIDTH = 60;
-const PIPE_GAP = 150;
-const PIPE_SPEED = 3;
+const PIPE_GAP = 180;
+const PIPE_SPEED = 2.5;
 
 interface Bird {
   y: number;
