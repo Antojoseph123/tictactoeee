@@ -248,6 +248,7 @@ export const useOnlineGame = () => {
           event: 'UPDATE',
           schema: 'public',
           table: 'games',
+          filter: `room_code=eq.${roomCode}`,
         },
         (payload) => {
           console.log('Game update:', payload);
@@ -258,8 +259,10 @@ export const useOnlineGame = () => {
               current_player: string;
               winner: string | null;
               moves: Json;
+              room_code: string | null;
             };
             
+            // Only process if this is our game
             setGame(prev => {
               if (!prev || prev.id !== gameData.id) return prev;
               
@@ -274,7 +277,9 @@ export const useOnlineGame = () => {
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Realtime subscription status:', status);
+      });
 
     channelRef.current = channel;
   }, []);
