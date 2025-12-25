@@ -10,9 +10,16 @@ import GamesLibrary from "./pages/GamesLibrary";
 import PlayGame from "./pages/PlayGame";
 import LeaderboardPage from "./pages/LeaderboardPage";
 import ProfilePage from "./pages/ProfilePage";
-
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+
+// Admin pages
+import AdminLayout from "./pages/admin/AdminLayout";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminGames from "./pages/admin/AdminGames";
+import AdminLeaderboards from "./pages/admin/AdminLeaderboards";
+import AdminSettings from "./pages/admin/AdminSettings";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +39,16 @@ const App = () => (
               <Route path="/profile" element={<ProfilePage />} />
               
               <Route path="/auth" element={<Auth />} />
+              
+              {/* Admin routes */}
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<AdminDashboard />} />
+                <Route path="users" element={<AdminUsers />} />
+                <Route path="games" element={<AdminGames />} />
+                <Route path="leaderboards" element={<AdminLeaderboards />} />
+                <Route path="settings" element={<AdminSettings />} />
+              </Route>
+              
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

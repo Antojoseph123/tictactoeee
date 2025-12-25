@@ -2,10 +2,11 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { 
   Gamepad2, Grid3X3, Puzzle, Zap, Target, 
-  Bird, Rocket, Brain, Hammer, Play, ArrowRight, ChevronDown, LayoutGrid, LogIn, User
+  Bird, Rocket, Brain, Hammer, Play, ArrowRight, ChevronDown, LayoutGrid, LogIn, User, Shield
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserRole } from "@/hooks/useUserRole";
 import { soundManager } from "@/utils/sounds";
 import DynamicIsland from "@/components/layout/DynamicIsland";
 import ThemeToggle from "@/components/TicTacToe/ThemeToggle";
@@ -132,6 +133,7 @@ const itemVariants = {
 const GameHub = () => {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
+  const { isModerator } = useUserRole();
 
   const handleGameClick = (game: Game) => {
     soundManager.playClick();
@@ -204,6 +206,17 @@ const GameHub = () => {
               <span className="text-xs text-muted-foreground">
                 {profile.wins}W · {profile.games_played} games
               </span>
+              {isModerator && (
+                <motion.button
+                  onClick={() => navigate("/admin")}
+                  className="ml-2 flex items-center gap-1 px-3 py-1 rounded-full bg-primary/20 text-primary text-xs font-medium hover:bg-primary/30 transition-colors"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Shield className="w-3 h-3" />
+                  Admin
+                </motion.button>
+              )}
             </motion.div>
           ) : (
             <motion.button
