@@ -3,9 +3,29 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Play, RotateCcw, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import confetti from 'canvas-confetti';
+import { HorizontalControls } from '../MobileControls';
 
-const CANVAS_WIDTH = 600;
-const CANVAS_HEIGHT = 400;
+// Responsive sizing
+const useResponsiveCanvas = () => {
+  const [size, setSize] = useState({ width: 600, height: 400 });
+  
+  useEffect(() => {
+    const updateSize = () => {
+      const maxWidth = Math.min(window.innerWidth - 48, 600);
+      const aspectRatio = 600 / 400;
+      const width = maxWidth;
+      const height = Math.floor(width / aspectRatio);
+      setSize({ width: Math.floor(width), height });
+    };
+    
+    updateSize();
+    window.addEventListener('resize', updateSize);
+    return () => window.removeEventListener('resize', updateSize);
+  }, []);
+  
+  return size;
+};
+
 const PADDLE_WIDTH = 12;
 const PADDLE_HEIGHT = 80;
 const BALL_SIZE = 12;
@@ -21,6 +41,7 @@ interface Ball {
 
 export function PongGame() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { width: CANVAS_WIDTH, height: CANVAS_HEIGHT } = useResponsiveCanvas();
   const [playerY, setPlayerY] = useState(CANVAS_HEIGHT / 2 - PADDLE_HEIGHT / 2);
   const [aiY, setAiY] = useState(CANVAS_HEIGHT / 2 - PADDLE_HEIGHT / 2);
   const [ball, setBall] = useState<Ball>({
@@ -379,8 +400,19 @@ export function PongGame() {
         )}
       </div>
 
-      <p className="text-sm text-muted-foreground">
-        Move mouse or touch to control paddle
+      {/* Mobile Controls */}
+      <div className="flex flex-col items-center gap-2 md:hidden">
+        <HorizontalControls
+          onLeft={() => setPlayerY(prev => Math.max(0, prev - 25))}
+          onRight={() => setPlayerY(prev => Math.min(CANVAS_HEIGHT - PADDLE_HEIGHT, prev + 25))}
+        />
+        <p className="text-xs text-muted-foreground">
+          Use ← → to move paddle up/down
+        </p>
+      </div>
+
+      <p className="text-sm text-muted-foreground hidden md:block">
+        Move mouse to control paddle
       </p>
     </div>
   );

@@ -3,8 +3,35 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Play, RotateCcw, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-const CANVAS_WIDTH = 400;
-const CANVAS_HEIGHT = 600;
+// Responsive sizing
+const useResponsiveCanvas = () => {
+  const [size, setSize] = useState({ width: 400, height: 600 });
+  
+  useEffect(() => {
+    const updateSize = () => {
+      const maxWidth = Math.min(window.innerWidth - 48, 400);
+      const maxHeight = Math.min(window.innerHeight - 280, 600);
+      const aspectRatio = 400 / 600;
+      
+      let width = maxWidth;
+      let height = width / aspectRatio;
+      
+      if (height > maxHeight) {
+        height = maxHeight;
+        width = height * aspectRatio;
+      }
+      
+      setSize({ width: Math.floor(width), height: Math.floor(height) });
+    };
+    
+    updateSize();
+    window.addEventListener('resize', updateSize);
+    return () => window.removeEventListener('resize', updateSize);
+  }, []);
+  
+  return size;
+};
+
 const BIRD_SIZE = 30;
 const GRAVITY = 0.35;
 const JUMP_FORCE = -8;
@@ -26,6 +53,7 @@ interface Pipe {
 
 export function FlappyBirdGame() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { width: CANVAS_WIDTH, height: CANVAS_HEIGHT } = useResponsiveCanvas();
   const [bird, setBird] = useState<Bird>({ y: CANVAS_HEIGHT / 2, velocity: 0, rotation: 0 });
   const [pipes, setPipes] = useState<Pipe[]>([]);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -386,8 +414,25 @@ export function FlappyBirdGame() {
         )}
       </div>
 
-      <p className="text-sm text-muted-foreground">
-        Tap, click, or press Space to fly
+      {/* Tap to fly button for mobile */}
+      <Button 
+        onClick={() => {
+          if (!isPlaying && !gameOver) {
+            startGame();
+          } else {
+            jump();
+          }
+        }}
+        size="lg"
+        className="md:hidden gap-2"
+        variant="outline"
+      >
+        Tap to Fly
+      </Button>
+
+      <p className="text-sm text-muted-foreground text-center">
+        <span className="hidden md:inline">Press Space or click to fly</span>
+        <span className="md:hidden">Tap the canvas or button to fly</span>
       </p>
     </div>
   );

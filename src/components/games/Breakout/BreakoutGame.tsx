@@ -5,15 +5,32 @@ import { Button } from '@/components/ui/button';
 import confetti from 'canvas-confetti';
 import { HorizontalControls } from '../MobileControls';
 
-const CANVAS_WIDTH = 480;
-const CANVAS_HEIGHT = 600;
+// Responsive sizing
+const useResponsiveCanvas = () => {
+  const [size, setSize] = useState({ width: 480, height: 600 });
+  
+  useEffect(() => {
+    const updateSize = () => {
+      const maxWidth = Math.min(window.innerWidth - 48, 480);
+      const aspectRatio = 480 / 600;
+      const width = maxWidth;
+      const height = Math.floor(width / aspectRatio);
+      setSize({ width: Math.floor(width), height });
+    };
+    
+    updateSize();
+    window.addEventListener('resize', updateSize);
+    return () => window.removeEventListener('resize', updateSize);
+  }, []);
+  
+  return size;
+};
+
 const PADDLE_WIDTH = 100;
 const PADDLE_HEIGHT = 12;
 const BALL_RADIUS = 8;
 const BRICK_ROWS = 6;
 const BRICK_COLS = 8;
-const BRICK_WIDTH = 54;
-const BRICK_HEIGHT = 20;
 const BRICK_GAP = 4;
 const BRICK_TOP = 60;
 
@@ -44,6 +61,12 @@ const COLORS = [
 
 export function BreakoutGame() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { width: CANVAS_WIDTH, height: CANVAS_HEIGHT } = useResponsiveCanvas();
+  
+  // Calculate responsive brick size
+  const BRICK_WIDTH = Math.floor((CANVAS_WIDTH - 20 - (BRICK_COLS - 1) * BRICK_GAP) / BRICK_COLS);
+  const BRICK_HEIGHT = 20;
+  
   const [paddleX, setPaddleX] = useState(CANVAS_WIDTH / 2 - PADDLE_WIDTH / 2);
   const [ball, setBall] = useState<Ball>({
     x: CANVAS_WIDTH / 2,

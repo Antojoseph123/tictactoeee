@@ -12,10 +12,28 @@ type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT';
 type Position = { x: number; y: number };
 
 const GRID_SIZE = 20;
-const CELL_SIZE = 20;
 const INITIAL_SPEED = 150;
 
+// Responsive cell size
+const useResponsiveCellSize = () => {
+  const [cellSize, setCellSize] = useState(20);
+  
+  useEffect(() => {
+    const updateSize = () => {
+      const maxBoardSize = Math.min(window.innerWidth - 48, 400);
+      setCellSize(Math.floor(maxBoardSize / GRID_SIZE));
+    };
+    
+    updateSize();
+    window.addEventListener('resize', updateSize);
+    return () => window.removeEventListener('resize', updateSize);
+  }, []);
+  
+  return cellSize;
+};
+
 export function SnakeGame() {
+  const CELL_SIZE = useResponsiveCellSize();
   const [snake, setSnake] = useState<Position[]>([{ x: 10, y: 10 }]);
   const [food, setFood] = useState<Position>({ x: 15, y: 15 });
   const [direction, setDirection] = useState<Direction>('RIGHT');

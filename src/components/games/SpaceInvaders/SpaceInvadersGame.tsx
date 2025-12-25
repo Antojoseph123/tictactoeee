@@ -5,8 +5,27 @@ import { Button } from '@/components/ui/button';
 import confetti from 'canvas-confetti';
 import { HorizontalControls } from '../MobileControls';
 
-const CANVAS_WIDTH = 500;
-const CANVAS_HEIGHT = 600;
+// Responsive sizing
+const useResponsiveCanvas = () => {
+  const [size, setSize] = useState({ width: 500, height: 600 });
+  
+  useEffect(() => {
+    const updateSize = () => {
+      const maxWidth = Math.min(window.innerWidth - 48, 500);
+      const aspectRatio = 500 / 600;
+      const width = maxWidth;
+      const height = Math.floor(width / aspectRatio);
+      setSize({ width: Math.floor(width), height });
+    };
+    
+    updateSize();
+    window.addEventListener('resize', updateSize);
+    return () => window.removeEventListener('resize', updateSize);
+  }, []);
+  
+  return size;
+};
+
 const PLAYER_WIDTH = 50;
 const PLAYER_HEIGHT = 30;
 const ALIEN_ROWS = 5;
@@ -31,6 +50,7 @@ interface Bullet {
 
 export function SpaceInvadersGame() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { width: CANVAS_WIDTH, height: CANVAS_HEIGHT } = useResponsiveCanvas();
   const [playerX, setPlayerX] = useState(CANVAS_WIDTH / 2 - PLAYER_WIDTH / 2);
   const [aliens, setAliens] = useState<Alien[]>([]);
   const [bullets, setBullets] = useState<Bullet[]>([]);
