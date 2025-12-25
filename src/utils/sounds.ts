@@ -2,12 +2,34 @@
 
 class SoundManager {
   private audioContext: AudioContext | null = null;
-  private enabled: boolean = true;
+  private enabled = true;
 
-  private getContext(): AudioContext {
+  private getContext(): AudioContext | null {
     if (!this.audioContext) {
-      this.audioContext = new AudioContext();
+      try {
+        const Ctx = (window.AudioContext || (window as any).webkitAudioContext) as
+          | typeof AudioContext
+          | undefined;
+        if (!Ctx) {
+          this.enabled = false;
+          return null;
+        }
+        this.audioContext = new Ctx();
+      } catch (e) {
+        // If audio is blocked/unavailable, never let it break app interactions.
+        console.warn("AudioContext unavailable; disabling sounds.", e);
+        this.enabled = false;
+        return null;
+      }
     }
+
+    // Best-effort resume (safe to call; may still be rejected by browser policies)
+    if (this.audioContext.state === "suspended") {
+      this.audioContext.resume().catch(() => {
+        // If resume fails, keep the app working silently.
+      });
+    }
+
     return this.audioContext;
   }
 
@@ -23,6 +45,8 @@ class SoundManager {
   playMoveX() {
     if (!this.enabled) return;
     const ctx = this.getContext();
+    if (!ctx) return;
+
     const oscillator = ctx.createOscillator();
     const gainNode = ctx.createGain();
 
@@ -31,7 +55,7 @@ class SoundManager {
 
     oscillator.frequency.setValueAtTime(800, ctx.currentTime);
     oscillator.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.1);
-    oscillator.type = 'sine';
+    oscillator.type = "sine";
 
     gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
     gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
@@ -44,6 +68,8 @@ class SoundManager {
   playMoveO() {
     if (!this.enabled) return;
     const ctx = this.getContext();
+    if (!ctx) return;
+
     const oscillator = ctx.createOscillator();
     const gainNode = ctx.createGain();
 
@@ -52,7 +78,7 @@ class SoundManager {
 
     oscillator.frequency.setValueAtTime(600, ctx.currentTime);
     oscillator.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.12);
-    oscillator.type = 'sine';
+    oscillator.type = "sine";
 
     gainNode.gain.setValueAtTime(0.25, ctx.currentTime);
     gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.12);
@@ -65,9 +91,10 @@ class SoundManager {
   playWin() {
     if (!this.enabled) return;
     const ctx = this.getContext();
-    
-    const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
-    
+    if (!ctx) return;
+
+    const notes = [523.25, 659.25, 783.99, 1046.5]; // C5, E5, G5, C6
+
     notes.forEach((freq, i) => {
       const oscillator = ctx.createOscillator();
       const gainNode = ctx.createGain();
@@ -76,7 +103,7 @@ class SoundManager {
       gainNode.connect(ctx.destination);
 
       oscillator.frequency.setValueAtTime(freq, ctx.currentTime);
-      oscillator.type = 'sine';
+      oscillator.type = "sine";
 
       const startTime = ctx.currentTime + i * 0.1;
       gainNode.gain.setValueAtTime(0, startTime);
@@ -92,6 +119,8 @@ class SoundManager {
   playDraw() {
     if (!this.enabled) return;
     const ctx = this.getContext();
+    if (!ctx) return;
+
     const oscillator = ctx.createOscillator();
     const gainNode = ctx.createGain();
 
@@ -100,7 +129,7 @@ class SoundManager {
 
     oscillator.frequency.setValueAtTime(300, ctx.currentTime);
     oscillator.frequency.linearRampToValueAtTime(250, ctx.currentTime + 0.3);
-    oscillator.type = 'triangle';
+    oscillator.type = "triangle";
 
     gainNode.gain.setValueAtTime(0.2, ctx.currentTime);
     gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
@@ -113,6 +142,8 @@ class SoundManager {
   playClick() {
     if (!this.enabled) return;
     const ctx = this.getContext();
+    if (!ctx) return;
+
     const oscillator = ctx.createOscillator();
     const gainNode = ctx.createGain();
 
@@ -120,7 +151,7 @@ class SoundManager {
     gainNode.connect(ctx.destination);
 
     oscillator.frequency.setValueAtTime(1000, ctx.currentTime);
-    oscillator.type = 'sine';
+    oscillator.type = "sine";
 
     gainNode.gain.setValueAtTime(0.15, ctx.currentTime);
     gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05);
@@ -133,6 +164,8 @@ class SoundManager {
   playError() {
     if (!this.enabled) return;
     const ctx = this.getContext();
+    if (!ctx) return;
+
     const oscillator = ctx.createOscillator();
     const gainNode = ctx.createGain();
 
@@ -141,7 +174,7 @@ class SoundManager {
 
     oscillator.frequency.setValueAtTime(200, ctx.currentTime);
     oscillator.frequency.linearRampToValueAtTime(150, ctx.currentTime + 0.15);
-    oscillator.type = 'sawtooth';
+    oscillator.type = "sawtooth";
 
     gainNode.gain.setValueAtTime(0.15, ctx.currentTime);
     gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
@@ -154,9 +187,10 @@ class SoundManager {
   playJoin() {
     if (!this.enabled) return;
     const ctx = this.getContext();
-    
+    if (!ctx) return;
+
     const notes = [440, 554.37]; // A4, C#5
-    
+
     notes.forEach((freq, i) => {
       const oscillator = ctx.createOscillator();
       const gainNode = ctx.createGain();
@@ -165,7 +199,7 @@ class SoundManager {
       gainNode.connect(ctx.destination);
 
       oscillator.frequency.setValueAtTime(freq, ctx.currentTime);
-      oscillator.type = 'sine';
+      oscillator.type = "sine";
 
       const startTime = ctx.currentTime + i * 0.08;
       gainNode.gain.setValueAtTime(0, startTime);
@@ -177,5 +211,6 @@ class SoundManager {
     });
   }
 }
+
 
 export const soundManager = new SoundManager();
