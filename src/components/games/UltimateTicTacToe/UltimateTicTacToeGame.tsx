@@ -326,9 +326,13 @@ export function UltimateTicTacToeGame() {
     navigate('/auth');
   }, [navigate]);
 
-  // Make AI move
-  const makeAIMove = useCallback(() => {
-    const move = getUltimateAIMove(boards, boardWinners, activeBoard, aiDifficulty);
+  // Make AI move - accepts current state to avoid stale closures
+  const makeAIMove = useCallback((
+    currentBoards: BigBoard,
+    currentBoardWinners: Player[],
+    currentActiveBoard: number | null
+  ) => {
+    const move = getUltimateAIMove(currentBoards, currentBoardWinners, currentActiveBoard, aiDifficulty);
     
     if (!move) {
       setIsAIThinking(false);
@@ -337,7 +341,7 @@ export function UltimateTicTacToeGame() {
 
     const { boardIndex, cellIndex } = move;
     
-    const newBoards = boards.map((board, i) => 
+    const newBoards = currentBoards.map((board, i) => 
       i === boardIndex 
         ? board.map((cell, j) => j === cellIndex ? 'O' as Player : cell)
         : [...board]
@@ -346,7 +350,7 @@ export function UltimateTicTacToeGame() {
     soundManager.playMoveO();
 
     // Check if this small board is won
-    const newBoardWinners = [...boardWinners];
+    const newBoardWinners = [...currentBoardWinners];
     const smallBoardWinner = checkWinner(newBoards[boardIndex]);
     if (smallBoardWinner) {
       newBoardWinners[boardIndex] = smallBoardWinner;
@@ -358,6 +362,7 @@ export function UltimateTicTacToeGame() {
     const bigBoardWinner = checkWinner(newBoardWinners);
     if (bigBoardWinner) {
       setWinner(bigBoardWinner);
+      setIsAIThinking(false);
       return;
     }
 
@@ -367,6 +372,7 @@ export function UltimateTicTacToeGame() {
     );
     if (allBoardsDecided) {
       setIsDraw(true);
+      setIsAIThinking(false);
       return;
     }
 
@@ -380,7 +386,7 @@ export function UltimateTicTacToeGame() {
 
     setCurrentPlayer('X');
     setIsAIThinking(false);
-  }, [boards, boardWinners, activeBoard, aiDifficulty]);
+  }, [aiDifficulty]);
 
   // Handle game end
   useEffect(() => {
@@ -418,6 +424,7 @@ export function UltimateTicTacToeGame() {
     if (boardWinners[boardIndex]) return;
     if (boards[boardIndex][cellIndex]) return;
     if (gameMode === 'ai' && currentPlayer === 'O') return;
+    if (isAIThinking) return; // Prevent clicks while AI is thinking
 
     soundManager.playClick();
 
@@ -461,24 +468,32 @@ export function UltimateTicTacToeGame() {
 
     // Set the next active board
     const nextBoard = cellIndex;
+    let newActiveBoard: number | null;
     if (newBoardWinners[nextBoard] || isBoardFull(newBoards[nextBoard])) {
-      setActiveBoard(null);
+      newActiveBoard = null;
     } else {
-      setActiveBoard(nextBoard);
+      newActiveBoard = nextBoard;
     }
+    setActiveBoard(newActiveBoard);
 
     const nextPlayer = currentPlayer === 'X' ? 'O' : 'X';
     setCurrentPlayer(nextPlayer);
 
-    // Schedule AI move if in AI mode
+    // Schedule AI move if in AI mode - pass current state directly
     if (gameMode === 'ai' && nextPlayer === 'O') {
       setIsAIThinking(true);
       const delay = aiDifficulty === 'easy' ? 600 : aiDifficulty === 'medium' ? 500 : 400;
+      
+      // Capture current state for the AI
+      const boardsForAI = newBoards;
+      const winnersForAI = newBoardWinners;
+      const activeBoardForAI = newActiveBoard;
+      
       aiTimerRef.current = setTimeout(() => {
-        makeAIMove();
+        makeAIMove(boardsForAI, winnersForAI, activeBoardForAI);
       }, delay);
     }
-  }, [boards, boardWinners, currentPlayer, activeBoard, winner, isDraw, gameMode, aiDifficulty, makeAIMove]);
+  }, [boards, boardWinners, currentPlayer, activeBoard, winner, isDraw, gameMode, aiDifficulty, makeAIMove, isAIThinking]);
 
   // Render leaderboard
   if (gameMode === 'leaderboard') {

@@ -48,12 +48,8 @@ const TicTacToe = () => {
   const [showFriends, setShowFriends] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
 
-  // Refs for AI move to avoid stale closures and duplicate timers
-  const boardRef = useRef(board);
-  const currentPlayerRef = useRef(currentPlayer);
-  const gameOverRef = useRef(false);
+  // Ref for AI timer to avoid duplicate timers
   const aiTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const aiPendingRef = useRef(false);
 
   // Hooks
   const { games, loading: historyLoading, saveGame, clearHistory } = useGameHistory();
@@ -73,12 +69,6 @@ const TicTacToe = () => {
   const isDraw = !winner && board.every((cell) => cell !== null);
   const gameOver = !!winner || isDraw;
 
-  // Keep refs updated
-  useEffect(() => {
-    boardRef.current = board;
-    currentPlayerRef.current = currentPlayer;
-    gameOverRef.current = gameOver;
-  }, [board, currentPlayer, gameOver]);
 
   // Handle game end - only trigger once
   useEffect(() => {
@@ -125,19 +115,18 @@ const TicTacToe = () => {
     }
   }, [gameOver, gameEnded, winner, isDraw, gameMode, user, profile, moves, board, aiDifficulty, line, saveGame, updateStats]);
 
-  // Make AI move function
-  const makeAIMove = useCallback(() => {
-    const currentBoard = boardRef.current;
-    const isGameOver = gameOverRef.current;
-    
-    if (isGameOver) {
+  // Make AI move function - accepts board state directly to avoid stale closure
+  const makeAIMove = useCallback((currentBoard: (string | null)[]) => {
+    // Check if there are empty cells
+    const hasEmptyCell = currentBoard.some(cell => cell === null);
+    if (!hasEmptyCell) {
       setIsAIThinking(false);
       return;
     }
     
-    // Check if there are empty cells
-    const hasEmptyCell = currentBoard.some(cell => cell === null);
-    if (!hasEmptyCell) {
+    // Double check game isn't already over
+    const result = checkWinner(currentBoard);
+    if (result.winner) {
       setIsAIThinking(false);
       return;
     }
@@ -153,8 +142,8 @@ const TicTacToe = () => {
       soundManager.playMoveO();
       
       // Check if game continues
-      const result = checkWinner(newBoard);
-      if (!result.winner && !newBoard.every(cell => cell !== null)) {
+      const afterMoveResult = checkWinner(newBoard);
+      if (!afterMoveResult.winner && !newBoard.every(cell => cell !== null)) {
         setCurrentPlayer('X');
       }
     } catch (error) {
@@ -170,6 +159,7 @@ const TicTacToe = () => {
   const handleCellClick = useCallback((index: number) => {
     if (board[index] || gameOver) return;
     if (gameMode === 'ai' && currentPlayer === 'O') return;
+    if (isAIThinking) return; // Prevent clicks while AI is thinking
 
     const newBoard = [...board];
     newBoard[index] = currentPlayer;
@@ -183,27 +173,27 @@ const TicTacToe = () => {
 
     if (!result.winner && !boardFull) {
       if (gameMode === 'ai') {
-        // Schedule AI response deterministically after the player's move
+        // Schedule AI response - pass the updated board directly to avoid stale closure
         setCurrentPlayer('O');
         setIsAIThinking(true);
 
-        aiPendingRef.current = true;
         if (aiTimerRef.current) {
           clearTimeout(aiTimerRef.current);
           aiTimerRef.current = null;
         }
 
         const delay = aiDifficulty === 'easy' ? 500 : aiDifficulty === 'medium' ? 400 : 300;
+        // Capture the new board state in the closure
+        const boardForAI = newBoard;
         aiTimerRef.current = setTimeout(() => {
           aiTimerRef.current = null;
-          aiPendingRef.current = false;
-          makeAIMove();
+          makeAIMove(boardForAI);
         }, delay);
       } else {
         setCurrentPlayer((prev) => (prev === 'X' ? 'O' : 'X'));
       }
     }
-  }, [board, currentPlayer, gameOver, checkWinner, gameMode, aiDifficulty, makeAIMove]);
+  }, [board, currentPlayer, gameOver, checkWinner, gameMode, aiDifficulty, makeAIMove, isAIThinking]);
 
   // Online game move handler
   const handleOnlineMove = useCallback(async (index: number) => {
@@ -230,7 +220,6 @@ const TicTacToe = () => {
       clearTimeout(aiTimerRef.current);
       aiTimerRef.current = null;
     }
-    aiPendingRef.current = false;
 
     setBoard(Array(9).fill(null));
     setCurrentPlayer('X');
