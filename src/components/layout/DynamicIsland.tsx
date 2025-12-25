@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, Gamepad2, Trophy, Settings, User } from "lucide-react";
+import { Home, Gamepad2, Trophy, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { soundManager } from "@/utils/sounds";
 
@@ -86,14 +86,6 @@ export const DynamicIsland = () => {
         </motion.button>
       )}
 
-      <motion.button
-        onClick={() => handleNavClick("/admin")}
-        className={`dynamic-island-item ${isActive("/admin") ? "active" : ""}`}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-      >
-        <Settings className="w-4 h-4" />
-      </motion.button>
     </motion.nav>
   );
 };
