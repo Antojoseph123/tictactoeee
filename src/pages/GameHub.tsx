@@ -143,16 +143,6 @@ const GameHub = () => {
       <DynamicIsland />
       <ThemeToggle />
       <SoundToggle />
-      
-      {/* Back to Home Button */}
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => navigate('/')}
-        className="fixed top-4 left-4 z-50 rounded-full glass-button"
-      >
-        <ArrowLeft className="w-5 h-5" />
-      </Button>
 
       {/* Hero Section - Apple Style */}
       <section className="relative min-h-screen flex flex-col items-center justify-center px-6 pt-20">
