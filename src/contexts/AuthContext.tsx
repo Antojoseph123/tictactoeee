@@ -145,7 +145,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     
     try {
       await supabase.rpc('update_profile_stats', {
-        p_user_id: user.id,
         p_result: result,
       });
       await refreshProfile();

@@ -210,10 +210,9 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      update_profile_stats: {
-        Args: { p_result: string; p_user_id: string }
-        Returns: undefined
-      }
+      update_profile_stats:
+        | { Args: { p_result: string }; Returns: undefined }
+        | { Args: { p_result: string; p_user_id: string }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
