@@ -533,18 +533,27 @@ export function UltimateTicTacToeGame() {
   };
 
   const handleCreateRoom = () => {
-    if (onlineName.trim()) {
-      soundManager.playClick();
-      onlineGame.createRoom(onlineName.trim());
-    }
+    const playerName = onlineName.trim() || profile?.username || 'Player';
+    soundManager.playClick();
+    onlineGame.createRoom(playerName);
   };
 
   const handleJoinRoom = () => {
-    if (onlineName.trim() && onlineRoomCode.trim()) {
+    const playerName = onlineName.trim() || profile?.username || 'Player';
+    if (onlineRoomCode.trim()) {
       soundManager.playClick();
-      onlineGame.joinRoom(onlineRoomCode.trim().toUpperCase(), onlineName.trim());
+      onlineGame.joinRoom(onlineRoomCode.trim().toUpperCase(), playerName);
     }
   };
+
+  const isLoggedIn = !!user && !!profile;
+
+  // Auto-fill name from profile when logged in
+  useEffect(() => {
+    if (profile?.username && !onlineName) {
+      setOnlineName(profile.username);
+    }
+  }, [profile, onlineName]);
 
   // Render online game
   if (gameMode === 'online') {
@@ -659,17 +668,26 @@ export function UltimateTicTacToeGame() {
               <motion.div className="space-y-4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
                 <h2 className="text-2xl font-light text-center text-foreground">Create Room</h2>
 
-                <div className="glass-panel rounded-2xl p-4">
-                  <label className="block text-sm text-muted-foreground mb-2">Your Name</label>
-                  <input
-                    type="text"
-                    value={onlineName}
-                    onChange={(e) => setOnlineName(e.target.value)}
-                    placeholder="Enter your name"
-                    className="w-full bg-card/10 border border-border/20 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
-                    maxLength={20}
-                  />
-                </div>
+                {!isLoggedIn && (
+                  <div className="glass-panel rounded-2xl p-4">
+                    <label className="block text-sm text-muted-foreground mb-2">Your Name</label>
+                    <input
+                      type="text"
+                      value={onlineName}
+                      onChange={(e) => setOnlineName(e.target.value)}
+                      placeholder="Enter your name"
+                      className="w-full bg-card/10 border border-border/20 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
+                      maxLength={20}
+                    />
+                  </div>
+                )}
+
+                {isLoggedIn && (
+                  <div className="glass-panel rounded-2xl p-4 text-center">
+                    <p className="text-sm text-muted-foreground">Playing as</p>
+                    <p className="text-lg font-medium text-foreground">{profile?.username}</p>
+                  </div>
+                )}
 
                 {onlineGame.error && (
                   <p className="text-destructive text-sm text-center">{onlineGame.error}</p>
@@ -686,7 +704,7 @@ export function UltimateTicTacToeGame() {
                   </motion.button>
                   <motion.button
                     onClick={handleCreateRoom}
-                    disabled={!onlineName.trim() || onlineGame.loading}
+                    disabled={(!isLoggedIn && !onlineName.trim()) || onlineGame.loading}
                     className="glass-button rounded-xl px-6 py-3 flex-1 text-primary disabled:opacity-50"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
@@ -707,22 +725,30 @@ export function UltimateTicTacToeGame() {
                       type="text"
                       value={onlineRoomCode}
                       onChange={(e) => setOnlineRoomCode(e.target.value.toUpperCase())}
-                      placeholder="Enter 6-letter code"
+                      placeholder="Enter 4-letter code"
                       className="w-full bg-card/10 border border-border/20 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 font-mono tracking-widest text-center text-xl"
-                      maxLength={6}
+                      maxLength={4}
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm text-muted-foreground mb-2">Your Name</label>
-                    <input
-                      type="text"
-                      value={onlineName}
-                      onChange={(e) => setOnlineName(e.target.value)}
-                      placeholder="Enter your name"
-                      className="w-full bg-card/10 border border-border/20 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
-                      maxLength={20}
-                    />
-                  </div>
+                  {!isLoggedIn && (
+                    <div>
+                      <label className="block text-sm text-muted-foreground mb-2">Your Name</label>
+                      <input
+                        type="text"
+                        value={onlineName}
+                        onChange={(e) => setOnlineName(e.target.value)}
+                        placeholder="Enter your name"
+                        className="w-full bg-card/10 border border-border/20 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
+                        maxLength={20}
+                      />
+                    </div>
+                  )}
+                  {isLoggedIn && (
+                    <div className="text-center">
+                      <p className="text-sm text-muted-foreground">Playing as</p>
+                      <p className="text-lg font-medium text-foreground">{profile?.username}</p>
+                    </div>
+                  )}
                 </div>
 
                 {onlineGame.error && (
@@ -740,7 +766,7 @@ export function UltimateTicTacToeGame() {
                   </motion.button>
                   <motion.button
                     onClick={handleJoinRoom}
-                    disabled={!onlineName.trim() || onlineRoomCode.length !== 6 || onlineGame.loading}
+                    disabled={(!isLoggedIn && !onlineName.trim()) || onlineRoomCode.length !== 4 || onlineGame.loading}
                     className="glass-button rounded-xl px-6 py-3 flex-1 text-secondary disabled:opacity-50"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
