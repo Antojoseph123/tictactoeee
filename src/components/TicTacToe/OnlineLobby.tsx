@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Copy, ArrowLeft, Users, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { soundManager } from "@/utils/sounds";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface OnlineLobbyProps {
   room: {
@@ -28,9 +29,17 @@ const OnlineLobby = ({
   onJoinRoom,
   onBack,
 }: OnlineLobbyProps) => {
+  const { user, profile } = useAuth();
   const [mode, setMode] = useState<'select' | 'create' | 'join'>('select');
   const [name, setName] = useState('');
   const [roomCode, setRoomCode] = useState('');
+
+  // Auto-fill name from profile when logged in
+  useEffect(() => {
+    if (profile?.username) {
+      setName(profile.username);
+    }
+  }, [profile]);
 
   const handleCopyCode = () => {
     if (room?.room_code) {
@@ -41,18 +50,20 @@ const OnlineLobby = ({
   };
 
   const handleCreate = () => {
-    if (name.trim()) {
-      soundManager.playClick();
-      onCreateRoom(name.trim());
-    }
+    const playerName = name.trim() || profile?.username || 'Player';
+    soundManager.playClick();
+    onCreateRoom(playerName);
   };
 
   const handleJoin = () => {
-    if (name.trim() && roomCode.trim()) {
+    const playerName = name.trim() || profile?.username || 'Player';
+    if (roomCode.trim()) {
       soundManager.playClick();
-      onJoinRoom(roomCode.trim().toUpperCase(), name.trim());
+      onJoinRoom(roomCode.trim().toUpperCase(), playerName);
     }
   };
+
+  const isLoggedIn = !!user && !!profile;
 
   // Waiting room view
   if (room && room.status === 'waiting') {
@@ -166,17 +177,26 @@ const OnlineLobby = ({
       >
         <h2 className="text-2xl font-light text-center text-foreground">Create Room</h2>
 
-        <div className="glass-panel rounded-2xl p-4">
-          <label className="block text-sm text-muted-foreground mb-2">Your Name</label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Enter your name"
-            className="w-full bg-card/10 border border-border/20 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
-            maxLength={20}
-          />
-        </div>
+        {!isLoggedIn && (
+          <div className="glass-panel rounded-2xl p-4">
+            <label className="block text-sm text-muted-foreground mb-2">Your Name</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter your name"
+              className="w-full bg-card/10 border border-border/20 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
+              maxLength={20}
+            />
+          </div>
+        )}
+
+        {isLoggedIn && (
+          <div className="glass-panel rounded-2xl p-4 text-center">
+            <p className="text-sm text-muted-foreground">Playing as</p>
+            <p className="text-lg font-medium text-foreground">{profile?.username}</p>
+          </div>
+        )}
 
         {error && (
           <p className="text-destructive text-sm text-center">{error}</p>
@@ -193,7 +213,7 @@ const OnlineLobby = ({
           </motion.button>
           <motion.button
             onClick={handleCreate}
-            disabled={!name.trim() || loading}
+            disabled={(!isLoggedIn && !name.trim()) || loading}
             className="glass-button rounded-xl px-6 py-3 flex-1 text-primary disabled:opacity-50"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
@@ -221,22 +241,30 @@ const OnlineLobby = ({
             type="text"
             value={roomCode}
             onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
-            placeholder="Enter 6-letter code"
+            placeholder="Enter 4-letter code"
             className="w-full bg-card/10 border border-border/20 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 font-mono tracking-widest text-center text-xl"
-            maxLength={6}
+            maxLength={4}
           />
         </div>
-        <div>
-          <label className="block text-sm text-muted-foreground mb-2">Your Name</label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Enter your name"
-            className="w-full bg-card/10 border border-border/20 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
-            maxLength={20}
-          />
-        </div>
+        {!isLoggedIn && (
+          <div>
+            <label className="block text-sm text-muted-foreground mb-2">Your Name</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter your name"
+              className="w-full bg-card/10 border border-border/20 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
+              maxLength={20}
+            />
+          </div>
+        )}
+        {isLoggedIn && (
+          <div className="text-center">
+            <p className="text-sm text-muted-foreground">Playing as</p>
+            <p className="text-lg font-medium text-foreground">{profile?.username}</p>
+          </div>
+        )}
       </div>
 
       {error && (
@@ -254,7 +282,7 @@ const OnlineLobby = ({
         </motion.button>
         <motion.button
           onClick={handleJoin}
-          disabled={!name.trim() || roomCode.length !== 6 || loading}
+          disabled={(!isLoggedIn && !name.trim()) || roomCode.length !== 4 || loading}
           className="glass-button rounded-xl px-6 py-3 flex-1 text-secondary disabled:opacity-50"
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
