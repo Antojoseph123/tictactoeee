@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, Gamepad2, Trophy, User } from "lucide-react";
+import { Home, Gamepad2, Trophy, User, Coins } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { soundManager } from "@/utils/sounds";
 
@@ -15,6 +15,7 @@ const navItems: NavItem[] = [
   { id: "home", label: "Overview", icon: Home, path: "/" },
   { id: "games", label: "Games", icon: Gamepad2, path: "/games" },
   { id: "leaderboard", label: "Rankings", icon: Trophy, path: "/leaderboard" },
+  { id: "casino", label: "Casino", icon: Coins, path: "/casino" },
 ];
 
 export const DynamicIsland = () => {
