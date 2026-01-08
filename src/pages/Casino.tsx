@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Dices, TrendingUp, Bomb, CircleDot, CreditCard, Target } from 'lucide-react';
+import { ArrowLeft, Dices, TrendingUp, Bomb } from 'lucide-react';
 import { CasinoHeader } from '@/components/casino/CasinoHeader';
 import { SlotsGame } from '@/components/casino/games/SlotsGame';
 import { BlackjackGame } from '@/components/casino/games/BlackjackGame';
@@ -9,12 +9,16 @@ import { RouletteGame } from '@/components/casino/games/RouletteGame';
 import { CrashGame } from '@/components/casino/games/CrashGame';
 import { DiceGame } from '@/components/casino/games/DiceGame';
 import { MinesGame } from '@/components/casino/games/MinesGame';
+import { CasinoSnakeGame } from '@/components/casino/games/arcade/CasinoSnakeGame';
+import { CasinoFlappyBirdGame } from '@/components/casino/games/arcade/CasinoFlappyBirdGame';
+import { CasinoWhackAMoleGame } from '@/components/casino/games/arcade/CasinoWhackAMoleGame';
+import { CasinoSimonSaysGame } from '@/components/casino/games/arcade/CasinoSimonSaysGame';
 import { useCasinoBalance } from '@/hooks/useCasinoBalance';
 import { soundManager } from '@/utils/sounds';
 import ThemeToggle from '@/components/TicTacToe/ThemeToggle';
 import SoundToggle from '@/components/TicTacToe/SoundToggle';
 
-type CasinoGame = 'slots' | 'blackjack' | 'roulette' | 'crash' | 'dice' | 'mines';
+type CasinoGame = 'slots' | 'blackjack' | 'roulette' | 'crash' | 'dice' | 'mines' | 'snake' | 'flappy' | 'whack' | 'simon';
 
 const games: { id: CasinoGame; name: string; icon: React.ReactNode; color: string }[] = [
   { id: 'slots', name: 'Slots', icon: '🎰', color: 'from-yellow-500 to-amber-500' },
@@ -23,6 +27,10 @@ const games: { id: CasinoGame; name: string; icon: React.ReactNode; color: strin
   { id: 'crash', name: 'Crash', icon: <TrendingUp className="w-6 h-6" />, color: 'from-red-500 to-pink-500' },
   { id: 'dice', name: 'Dice', icon: <Dices className="w-6 h-6" />, color: 'from-blue-500 to-indigo-500' },
   { id: 'mines', name: 'Mines', icon: <Bomb className="w-6 h-6" />, color: 'from-cyan-500 to-teal-500' },
+  { id: 'snake', name: 'Snake', icon: '🐍', color: 'from-lime-500 to-green-600' },
+  { id: 'flappy', name: 'Flappy Bird', icon: '🐦', color: 'from-sky-400 to-blue-500' },
+  { id: 'whack', name: 'Whack-a-Mole', icon: '🔨', color: 'from-orange-500 to-red-500' },
+  { id: 'simon', name: 'Simon Says', icon: '🎵', color: 'from-purple-500 to-pink-500' },
 ];
 
 const Casino = () => {
@@ -59,6 +67,14 @@ const Casino = () => {
         return <DiceGame {...props} />;
       case 'mines':
         return <MinesGame {...props} />;
+      case 'snake':
+        return <CasinoSnakeGame {...props} />;
+      case 'flappy':
+        return <CasinoFlappyBirdGame {...props} />;
+      case 'whack':
+        return <CasinoWhackAMoleGame {...props} />;
+      case 'simon':
+        return <CasinoSimonSaysGame {...props} />;
       default:
         return null;
     }
