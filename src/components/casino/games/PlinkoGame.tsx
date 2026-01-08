@@ -11,23 +11,21 @@ interface PlinkoGameProps {
 
 const ROWS = 12;
 const MULTIPLIERS = [10, 3, 1.5, 1.2, 1, 0.5, 0.3, 0.5, 1, 1.2, 1.5, 3, 10];
+const BALL_COUNTS = [1, 3, 5, 10];
 
 export const PlinkoGame = ({ balance, onBet, onWin }: PlinkoGameProps) => {
   const [betAmount, setBetAmount] = useState(5);
+  const [ballCount, setBallCount] = useState(1);
   const [isDropping, setIsDropping] = useState(false);
-  const [lastWin, setLastWin] = useState<{ multiplier: number; amount: number } | null>(null);
+  const [sessionProfit, setSessionProfit] = useState(0);
+  const [activeBallCount, setActiveBallCount] = useState(0);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const engineRef = useRef<Matter.Engine | null>(null);
   const renderRef = useRef<Matter.Render | null>(null);
   const runnerRef = useRef<Matter.Runner | null>(null);
-  const activeBallsRef = useRef<Set<number>>(new Set());
-  const betAmountRef = useRef(betAmount);
-
-  // Keep betAmount ref in sync
-  useEffect(() => {
-    betAmountRef.current = betAmount;
-  }, [betAmount]);
+  const activeBallsRef = useRef<Map<number, number>>(new Map()); // ballId -> betAmount
+  const sessionProfitRef = useRef(0);
 
   // Initialize physics engine
   useEffect(() => {
@@ -37,13 +35,11 @@ export const PlinkoGame = ({ balance, onBet, onWin }: PlinkoGameProps) => {
     const width = 400;
     const height = 500;
 
-    // Create engine
     const engine = Matter.Engine.create({
       gravity: { x: 0, y: 1.2 },
     });
     engineRef.current = engine;
 
-    // Create renderer
     const render = Matter.Render.create({
       canvas,
       engine,
@@ -57,7 +53,6 @@ export const PlinkoGame = ({ balance, onBet, onWin }: PlinkoGameProps) => {
     });
     renderRef.current = render;
 
-    // Create runner
     const runner = Matter.Runner.create();
     runnerRef.current = runner;
 
@@ -67,7 +62,6 @@ export const PlinkoGame = ({ balance, onBet, onWin }: PlinkoGameProps) => {
     const endY = height - 60;
     const rowSpacing = (endY - startY) / ROWS;
 
-    // Create pegs
     for (let row = 0; row < ROWS; row++) {
       const pegsInRow = row + 3;
       const rowWidth = (pegsInRow - 1) * 28;
@@ -81,27 +75,19 @@ export const PlinkoGame = ({ balance, onBet, onWin }: PlinkoGameProps) => {
           isStatic: true,
           restitution: 0.5,
           friction: 0.1,
-          render: {
-            fillStyle: 'hsl(222 30% 25%)',
-          },
+          render: { fillStyle: 'hsl(222 30% 25%)' },
           label: 'peg',
         });
         Matter.Composite.add(engine.world, peg);
       }
     }
 
-    // Create walls
-    const wallOptions = {
-      isStatic: true,
-      render: { fillStyle: 'transparent' },
-    };
-
-    // Left wall
+    // Walls
+    const wallOptions = { isStatic: true, render: { fillStyle: 'transparent' } };
     Matter.Composite.add(engine.world, Matter.Bodies.rectangle(-10, height / 2, 20, height, wallOptions));
-    // Right wall
     Matter.Composite.add(engine.world, Matter.Bodies.rectangle(width + 10, height / 2, 20, height, wallOptions));
 
-    // Create bucket dividers and sensors
+    // Bucket dividers
     const bucketY = height - 30;
     const bucketWidth = width / MULTIPLIERS.length;
 
@@ -116,7 +102,7 @@ export const PlinkoGame = ({ balance, onBet, onWin }: PlinkoGameProps) => {
       Matter.Composite.add(engine.world, divider);
     }
 
-    // A floor so balls never fall into the void
+    // Floor
     const floor = Matter.Bodies.rectangle(width / 2, height + 20, width + 80, 60, {
       isStatic: true,
       render: { fillStyle: 'transparent' },
@@ -126,42 +112,41 @@ export const PlinkoGame = ({ balance, onBet, onWin }: PlinkoGameProps) => {
 
     const settleBall = (ball: Matter.Body) => {
       const ballId = parseInt(ball.label.split('-')[1]);
-      if (!activeBallsRef.current.has(ballId)) return;
+      const ballBet = activeBallsRef.current.get(ballId);
+      if (ballBet === undefined) return;
 
       activeBallsRef.current.delete(ballId);
 
-      const bucketIndex = Math.max(
-        0,
-        Math.min(MULTIPLIERS.length - 1, Math.floor(ball.position.x / bucketWidth))
-      );
+      const bucketIndex = Math.max(0, Math.min(MULTIPLIERS.length - 1, Math.floor(ball.position.x / bucketWidth)));
       const multiplier = MULTIPLIERS[bucketIndex] || 1;
-      const winAmount = betAmountRef.current * multiplier;
+      const winAmount = ballBet * multiplier;
+      const profit = winAmount - ballBet;
 
-      setLastWin({ multiplier, amount: winAmount });
+      sessionProfitRef.current += profit;
+      setSessionProfit(sessionProfitRef.current);
       onWin(winAmount);
 
       setTimeout(() => {
         Matter.Composite.remove(engine.world, ball);
-        if (activeBallsRef.current.size === 0) setIsDropping(false);
-      }, 250);
+        setActiveBallCount(activeBallsRef.current.size);
+        if (activeBallsRef.current.size === 0) {
+          setIsDropping(false);
+        }
+      }, 200);
     };
 
-    // Start rendering and physics
     Matter.Render.run(render);
     Matter.Runner.run(runner, engine);
 
     const onCollisionStart = (event: Matter.IEventCollision<Matter.Engine>) => {
       for (const pair of event.pairs) {
         const { bodyA, bodyB } = pair;
-
-        // Settle as soon as a ball touches the floor
         if (bodyA.label.startsWith('ball-') && bodyB.label === 'floor') settleBall(bodyA);
         if (bodyB.label.startsWith('ball-') && bodyA.label === 'floor') settleBall(bodyB);
       }
     };
 
     const onAfterUpdate = () => {
-      // Safety: if a ball is very low, settle it based on x-position
       for (const body of engine.world.bodies) {
         if (!body.label.startsWith('ball-')) continue;
         if (body.position.y >= height - 18) {
@@ -174,15 +159,14 @@ export const PlinkoGame = ({ balance, onBet, onWin }: PlinkoGameProps) => {
     Matter.Events.on(engine, 'afterUpdate', onAfterUpdate);
 
     return () => {
-      // Important: do NOT remove the canvas element (React owns it)
       Matter.Events.off(engine, 'collisionStart', onCollisionStart);
+      Matter.Events.off(engine, 'afterUpdate', onAfterUpdate);
 
       try {
         Matter.Render.stop(render);
         Matter.Runner.stop(runner);
         Matter.World.clear(engine.world, false);
         Matter.Engine.clear(engine);
-        // prevent memory leaks from cached textures
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (render as any).textures = {};
       } finally {
@@ -194,34 +178,26 @@ export const PlinkoGame = ({ balance, onBet, onWin }: PlinkoGameProps) => {
     };
   }, [onWin]);
 
-  const dropBall = useCallback(async () => {
+  const spawnBall = useCallback((betAmt: number) => {
     if (!engineRef.current) return;
-    
-    const success = await onBet(betAmount);
-    if (!success) return;
 
-    setIsDropping(true);
-    setLastWin(null);
+    const ballId = Date.now() + Math.random() * 1000;
+    activeBallsRef.current.set(ballId, betAmt);
+    setActiveBallCount(activeBallsRef.current.size);
 
-    const ballId = Date.now();
-    activeBallsRef.current.add(ballId);
-
-    // Create ball with slight random offset
-    const randomOffset = (Math.random() - 0.5) * 20;
+    const randomOffset = (Math.random() - 0.5) * 30;
     const ball = Matter.Bodies.circle(200 + randomOffset, 10, 8, {
       restitution: 0.6,
       friction: 0.1,
       frictionAir: 0.01,
       density: 0.001,
-      render: {
-        fillStyle: 'hsl(142 70% 45%)',
-      },
+      render: { fillStyle: 'hsl(142 70% 45%)' },
       label: `ball-${ballId}`,
     });
 
     Matter.Composite.add(engineRef.current.world, ball);
 
-    // Safety timeout - settle based on the ball's x-position
+    // Safety timeout
     setTimeout(() => {
       if (activeBallsRef.current.has(ballId) && engineRef.current) {
         activeBallsRef.current.delete(ballId);
@@ -230,35 +206,64 @@ export const PlinkoGame = ({ balance, onBet, onWin }: PlinkoGameProps) => {
         const bucketWidth = width / MULTIPLIERS.length;
         const bucketIndex = Math.max(0, Math.min(MULTIPLIERS.length - 1, Math.floor(ball.position.x / bucketWidth)));
         const multiplier = MULTIPLIERS[bucketIndex] || 1;
-        const winAmount = betAmountRef.current * multiplier;
+        const winAmount = betAmt * multiplier;
+        const profit = winAmount - betAmt;
 
-        setLastWin({ multiplier, amount: winAmount });
+        sessionProfitRef.current += profit;
+        setSessionProfit(sessionProfitRef.current);
         onWin(winAmount);
 
         Matter.Composite.remove(engineRef.current.world, ball);
+        setActiveBallCount(activeBallsRef.current.size);
 
         if (activeBallsRef.current.size === 0) {
           setIsDropping(false);
         }
       }
     }, 7000);
-  }, [betAmount, onBet, onWin]);
+  }, [onWin]);
+
+  const dropBalls = useCallback(async () => {
+    if (!engineRef.current) return;
+
+    const totalCost = betAmount * ballCount;
+    if (totalCost > balance) return;
+
+    // Reset session profit for new drop
+    sessionProfitRef.current = 0;
+    setSessionProfit(0);
+    setIsDropping(true);
+
+    // Drop balls with staggered timing
+    for (let i = 0; i < ballCount; i++) {
+      const success = await onBet(betAmount);
+      if (!success) break;
+
+      setTimeout(() => {
+        spawnBall(betAmount);
+      }, i * 150); // 150ms delay between each ball
+    }
+  }, [betAmount, ballCount, balance, onBet, spawnBall]);
+
+  const totalCost = betAmount * ballCount;
 
   return (
     <div className="flex flex-col items-center gap-6 p-6">
       <div className="text-center">
         <h2 className="text-2xl font-semibold mb-2">Plinko</h2>
-        <p className="text-sm text-text-muted">Drop the ball and watch it bounce</p>
+        <p className="text-sm text-text-muted">Drop balls and watch them bounce</p>
       </div>
 
       {/* Plinko Board */}
       <div className="relative bg-surface rounded-xl overflow-hidden">
-        <canvas 
-          ref={canvasRef} 
-          width={400} 
-          height={500}
-          className="block"
-        />
+        <canvas ref={canvasRef} width={400} height={500} className="block" />
+        
+        {/* Active balls counter */}
+        {activeBallCount > 0 && (
+          <div className="absolute top-3 right-3 px-2 py-1 bg-surface-elevated rounded text-xs font-medium">
+            {activeBallCount} ball{activeBallCount > 1 ? 's' : ''} active
+          </div>
+        )}
         
         {/* Multiplier labels overlay */}
         <div className="absolute bottom-0 left-0 right-0 flex">
@@ -266,9 +271,7 @@ export const PlinkoGame = ({ balance, onBet, onWin }: PlinkoGameProps) => {
             <div
               key={i}
               className={`flex-1 py-2 text-center text-xs font-bold ${
-                mult >= 3 ? 'text-primary' :
-                mult >= 1 ? 'text-text' :
-                'text-text-dim'
+                mult >= 3 ? 'text-primary' : mult >= 1 ? 'text-text' : 'text-text-dim'
               }`}
             >
               {mult}x
@@ -277,15 +280,15 @@ export const PlinkoGame = ({ balance, onBet, onWin }: PlinkoGameProps) => {
         </div>
       </div>
 
-      {/* Last win */}
-      {lastWin && (
-        <p className={`text-lg font-semibold ${lastWin.multiplier >= 1 ? 'text-primary' : 'text-text-dim'}`}>
-          {lastWin.multiplier}x → ${lastWin.amount.toFixed(2)}
+      {/* Session profit */}
+      {(isDropping || sessionProfit !== 0) && (
+        <p className={`text-lg font-semibold ${sessionProfit >= 0 ? 'text-primary' : 'text-red-500'}`}>
+          {sessionProfit >= 0 ? '+' : ''}${sessionProfit.toFixed(2)}
         </p>
       )}
 
       {/* Controls */}
-      <div className="w-full max-w-xs space-y-4">
+      <div className="w-full max-w-sm space-y-4">
         <BetControls
           betAmount={betAmount}
           setBetAmount={setBetAmount}
@@ -293,12 +296,36 @@ export const PlinkoGame = ({ balance, onBet, onWin }: PlinkoGameProps) => {
           disabled={isDropping}
         />
 
+        {/* Ball count selector */}
+        <div className="space-y-2">
+          <label className="text-xs text-text-muted uppercase tracking-wide">Balls</label>
+          <div className="flex gap-2">
+            {BALL_COUNTS.map((count) => (
+              <button
+                key={count}
+                onClick={() => setBallCount(count)}
+                disabled={isDropping}
+                className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  ballCount === count
+                    ? 'bg-primary text-white'
+                    : 'bg-surface-elevated text-text-muted hover:text-text'
+                } disabled:opacity-50`}
+              >
+                {count}x
+              </button>
+            ))}
+          </div>
+        </div>
+
         <Button
-          onClick={dropBall}
-          disabled={isDropping || betAmount > balance}
+          onClick={dropBalls}
+          disabled={isDropping || totalCost > balance}
           className="w-full h-12 font-semibold bg-primary hover:bg-primary-hover"
         >
-          {isDropping ? 'Dropping...' : `Drop Ball ($${betAmount})`}
+          {isDropping 
+            ? `Dropping... (${activeBallCount})` 
+            : `Drop ${ballCount} Ball${ballCount > 1 ? 's' : ''} ($${totalCost.toFixed(2)})`
+          }
         </Button>
       </div>
     </div>
