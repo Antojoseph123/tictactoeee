@@ -1,52 +1,64 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { User } from "lucide-react";
+import { motion } from "framer-motion";
 
 export const CasinoNav = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 px-6 py-4">
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-bg/80 backdrop-blur-xl border-b border-border" />
-      
-      <div className="relative flex items-center justify-between max-w-5xl mx-auto">
+    <motion.header 
+      className="casino-nav-glass"
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <div className="flex items-center justify-between gap-8">
         {/* Logo */}
         <button 
           onClick={() => navigate("/")}
-          className="flex items-center gap-2 group"
+          className="flex items-center gap-2.5 group"
         >
-          {/* Logo mark */}
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-b from-primary to-primary-muted flex items-center justify-center">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-b from-primary to-primary-muted flex items-center justify-center shadow-lg shadow-primary/20">
             <span className="text-white font-bold text-sm">G</span>
           </div>
-          <span className="text-lg font-semibold text-text tracking-tight">
+          <span className="text-lg font-semibold text-text tracking-tight hidden sm:block">
             Game<span className="text-primary">Hub</span>
           </span>
         </button>
 
-        {/* Nav actions */}
+        {/* Nav Links */}
+        <nav className="hidden md:flex items-center gap-6">
+          <button 
+            onClick={() => document.getElementById('games')?.scrollIntoView({ behavior: 'smooth' })}
+            className="text-sm font-medium text-text-muted hover:text-text transition-colors"
+          >
+            Games
+          </button>
+        </nav>
+
+        {/* Auth */}
         <div className="flex items-center gap-3">
           {user ? (
             <button
               onClick={() => navigate("/profile")}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-text-muted hover:text-text hover:bg-surface border border-border transition-all duration-200"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-text-muted hover:text-text hover:bg-white/5 transition-all duration-200"
             >
               <User className="w-4 h-4" />
-              <span>Profile</span>
+              <span className="hidden sm:inline">Profile</span>
             </button>
           ) : (
             <button
               onClick={() => navigate("/auth")}
-              className="px-5 py-2.5 rounded-lg text-sm font-medium bg-surface border border-border text-text hover:bg-surface-elevated transition-all duration-200"
+              className="px-5 py-2.5 rounded-xl text-sm font-medium bg-white/5 border border-white/10 text-text hover:bg-white/10 transition-all duration-200"
             >
               Sign In
             </button>
           )}
         </div>
       </div>
-    </header>
+    </motion.header>
   );
 };
 
