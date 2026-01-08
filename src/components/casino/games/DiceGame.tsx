@@ -60,10 +60,10 @@ export const DiceGame = ({ balance, onBet, onWin }: DiceGameProps) => {
   }, [betAmount, target, rollOver, multiplier, onBet, onWin]);
 
   return (
-    <div className="flex flex-col items-center gap-6 p-6">
+    <div className="flex flex-col items-center gap-4 sm:gap-6 p-4 sm:p-6">
       <div className="text-center">
-        <h2 className="text-2xl font-semibold text-foreground mb-2">Dice</h2>
-        <p className="text-sm text-muted-foreground">Roll {rollOver ? 'over' : 'under'} {target.toFixed(2)} to win</p>
+        <h2 className="text-xl sm:text-2xl font-semibold text-foreground mb-1 sm:mb-2">Dice</h2>
+        <p className="text-xs sm:text-sm text-muted-foreground">Roll {rollOver ? 'over' : 'under'} {target.toFixed(2)} to win</p>
       </div>
 
       {/* History */}
@@ -81,14 +81,14 @@ export const DiceGame = ({ balance, onBet, onWin }: DiceGameProps) => {
       </div>
 
       {/* Result Display */}
-      <div className="relative w-full max-w-md">
-        <div className="h-20 bg-muted/30 rounded-xl flex items-center justify-center relative overflow-hidden border border-border">
+      <div className="relative w-full max-w-xs sm:max-w-md px-2">
+        <div className="h-16 sm:h-20 bg-muted/30 rounded-xl flex items-center justify-center relative overflow-hidden border border-border">
           <div 
-            className={`absolute inset-y-0 ${rollOver ? 'right-0' : 'left-0'} bg-casino-win/20`}
+            className={`absolute inset-y-0 ${rollOver ? 'right-0' : 'left-0'} bg-primary/20`}
             style={{ width: `${rollOver ? 100 - target : target}%` }}
           />
           <motion.span
-            className={`text-4xl font-bold z-10 ${
+            className={`text-3xl sm:text-4xl font-bold z-10 ${
               won === null ? 'text-foreground' :
               won ? 'indicator-win' : 'indicator-loss'
             }`}
@@ -111,7 +111,7 @@ export const DiceGame = ({ balance, onBet, onWin }: DiceGameProps) => {
       </div>
 
       {/* Target Slider */}
-      <div className="w-full max-w-md space-y-4">
+      <div className="w-full max-w-xs sm:max-w-md space-y-3 sm:space-y-4 px-2">
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Target</span>
           <div className="flex gap-2">

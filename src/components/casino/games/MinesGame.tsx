@@ -83,10 +83,10 @@ export const MinesGame = ({ balance, onBet, onWin }: MinesGameProps) => {
   };
 
   return (
-    <div className="flex flex-col items-center gap-6 p-6">
+    <div className="flex flex-col items-center gap-4 sm:gap-6 p-4 sm:p-6">
       <div className="text-center">
-        <h2 className="text-2xl font-semibold text-foreground mb-2">Mines</h2>
-        <p className="text-sm text-muted-foreground">Reveal gems, avoid mines</p>
+        <h2 className="text-xl sm:text-2xl font-semibold text-foreground mb-1 sm:mb-2">Mines</h2>
+        <p className="text-xs sm:text-sm text-muted-foreground">Reveal gems, avoid mines</p>
       </div>
 
       {/* Multiplier Display */}
@@ -105,7 +105,7 @@ export const MinesGame = ({ balance, onBet, onWin }: MinesGameProps) => {
       )}
 
       {/* Game Grid */}
-      <div className="grid grid-cols-5 gap-2 p-4 bg-muted/20 rounded-xl border border-border">
+      <div className="grid grid-cols-5 gap-1.5 sm:gap-2 p-3 sm:p-4 bg-muted/20 rounded-xl border border-border w-full max-w-xs sm:max-w-sm">
         {Array.from({ length: GRID_SIZE }).map((_, index) => {
           const isRevealed = revealed.includes(index);
           const isMine = mines.includes(index);
@@ -117,14 +117,14 @@ export const MinesGame = ({ balance, onBet, onWin }: MinesGameProps) => {
               key={index}
               onClick={() => revealTile(index)}
               disabled={gameState !== 'playing' || isRevealed}
-              className={`w-12 h-12 rounded-lg flex items-center justify-center font-bold text-lg transition-all ${
+              className={`aspect-square w-full rounded-lg flex items-center justify-center font-bold text-lg transition-all ${
                 showMine
                   ? 'bg-destructive'
                   : showGem
                   ? 'bg-casino-win'
                   : 'bg-muted hover:bg-muted/80'
               } ${gameState === 'playing' && !isRevealed ? 'cursor-pointer' : 'cursor-default'}`}
-              whileHover={gameState === 'playing' && !isRevealed ? { scale: 1.1 } : {}}
+              whileHover={gameState === 'playing' && !isRevealed ? { scale: 1.05 } : {}}
               whileTap={gameState === 'playing' && !isRevealed ? { scale: 0.95 } : {}}
             >
               <AnimatePresence>
@@ -133,7 +133,7 @@ export const MinesGame = ({ balance, onBet, onWin }: MinesGameProps) => {
                     initial={{ scale: 0, rotate: -180 }}
                     animate={{ scale: 1, rotate: 0 }}
                   >
-                    <Bomb className="w-6 h-6 text-white" />
+                    <Bomb className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
                   </motion.div>
                 )}
                 {showGem && (
@@ -141,7 +141,7 @@ export const MinesGame = ({ balance, onBet, onWin }: MinesGameProps) => {
                     initial={{ scale: 0, rotate: -180 }}
                     animate={{ scale: 1, rotate: 0 }}
                   >
-                    <Gem className="w-6 h-6 text-white" />
+                    <Gem className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
                   </motion.div>
                 )}
               </AnimatePresence>

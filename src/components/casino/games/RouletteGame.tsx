@@ -87,14 +87,14 @@ export const RouletteGame = ({ balance, onBet, onWin }: RouletteGameProps) => {
   }, [selectedBet, spinning, betAmount, rotation, onBet, onWin]);
 
   return (
-    <div className="flex flex-col items-center gap-6 p-6">
+    <div className="flex flex-col items-center gap-4 sm:gap-6 p-4 sm:p-6">
       <div className="text-center">
-        <h2 className="text-2xl font-semibold text-foreground mb-2">Roulette</h2>
-        <p className="text-sm text-muted-foreground">Pick your bet and spin</p>
+        <h2 className="text-xl sm:text-2xl font-semibold text-foreground mb-1 sm:mb-2">Roulette</h2>
+        <p className="text-xs sm:text-sm text-muted-foreground">Pick your bet and spin</p>
       </div>
 
       {/* Wheel */}
-      <div className="relative w-64 h-64">
+      <div className="relative w-48 h-48 sm:w-64 sm:h-64">
         <motion.div
           className="w-full h-full rounded-full border-4 border-secondary bg-muted flex items-center justify-center shadow-lg"
           animate={{ rotate: rotation }}
@@ -106,9 +106,9 @@ export const RouletteGame = ({ balance, onBet, onWin }: RouletteGameProps) => {
             return (
               <div
                 key={num}
-                className="absolute text-xs font-medium text-white"
+                className="absolute text-[8px] sm:text-xs font-medium text-white"
                 style={{
-                  transform: `rotate(${angle}deg) translateX(100px) rotate(90deg)`,
+                  transform: `rotate(${angle}deg) translateX(75px) sm:translateX(100px) rotate(90deg)`,
                 }}
               >
                 <span className={`px-1 rounded ${
@@ -159,15 +159,16 @@ export const RouletteGame = ({ balance, onBet, onWin }: RouletteGameProps) => {
       </AnimatePresence>
 
       {/* Betting Options */}
-      <div className="w-full max-w-md space-y-3">
-        <p className="text-sm text-muted-foreground">Select bet:</p>
+      <div className="w-full max-w-xs sm:max-w-md space-y-3">
+        <p className="text-xs sm:text-sm text-muted-foreground">Select bet:</p>
         
-        <div className="flex gap-2 justify-center">
+        <div className="flex gap-1.5 sm:gap-2 justify-center flex-wrap">
           <Button
             variant={selectedBet === 'red' ? 'default' : 'outline'}
             onClick={() => setSelectedBet('red')}
             disabled={spinning}
-            className="bg-red-600 hover:bg-red-700 text-white border-red-600"
+            size="sm"
+            className="bg-red-600 hover:bg-red-700 text-white border-red-600 text-xs sm:text-sm"
           >
             Red (2x)
           </Button>
@@ -175,7 +176,8 @@ export const RouletteGame = ({ balance, onBet, onWin }: RouletteGameProps) => {
             variant={selectedBet === 'black' ? 'default' : 'outline'}
             onClick={() => setSelectedBet('black')}
             disabled={spinning}
-            className="bg-gray-900 hover:bg-gray-800 text-white border-gray-900"
+            size="sm"
+            className="bg-gray-900 hover:bg-gray-800 text-white border-gray-900 text-xs sm:text-sm"
           >
             Black (2x)
           </Button>
@@ -183,7 +185,8 @@ export const RouletteGame = ({ balance, onBet, onWin }: RouletteGameProps) => {
             variant={selectedBet === 'green' ? 'default' : 'outline'}
             onClick={() => setSelectedBet('green')}
             disabled={spinning}
-            className="bg-green-600 hover:bg-green-700 text-white border-green-600"
+            size="sm"
+            className="bg-green-600 hover:bg-green-700 text-white border-green-600 text-xs sm:text-sm"
           >
             0 (35x)
           </Button>
@@ -226,7 +229,7 @@ export const RouletteGame = ({ balance, onBet, onWin }: RouletteGameProps) => {
       </div>
 
       {/* Controls */}
-      <div className="w-full max-w-xs space-y-4">
+      <div className="w-full max-w-xs space-y-3 sm:space-y-4">
         <BetControls
           betAmount={betAmount}
           setBetAmount={setBetAmount}
@@ -237,7 +240,7 @@ export const RouletteGame = ({ balance, onBet, onWin }: RouletteGameProps) => {
         <Button
           onClick={spin}
           disabled={spinning || !selectedBet || betAmount > balance}
-          className="w-full h-12 font-semibold bg-primary hover:bg-primary-glow"
+          className="w-full h-11 sm:h-12 font-semibold"
         >
           {spinning ? 'Spinning...' : `Spin ($${betAmount})`}
         </Button>

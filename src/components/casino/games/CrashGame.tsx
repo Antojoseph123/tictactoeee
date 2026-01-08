@@ -77,10 +77,10 @@ export const CrashGame = ({ balance, onBet, onWin }: CrashGameProps) => {
   }, []);
 
   return (
-    <div className="flex flex-col items-center gap-6 p-6">
+    <div className="flex flex-col items-center gap-4 sm:gap-6 p-4 sm:p-6">
       <div className="text-center">
-        <h2 className="text-2xl font-semibold text-foreground mb-2">Crash</h2>
-        <p className="text-sm text-muted-foreground">Cash out before it crashes</p>
+        <h2 className="text-xl sm:text-2xl font-semibold text-foreground mb-1 sm:mb-2">Crash</h2>
+        <p className="text-xs sm:text-sm text-muted-foreground">Cash out before it crashes</p>
       </div>
 
       {/* History */}
@@ -96,7 +96,7 @@ export const CrashGame = ({ balance, onBet, onWin }: CrashGameProps) => {
       </div>
 
       {/* Crash Display */}
-      <div className="relative w-full max-w-md h-48 bg-muted/20 rounded-xl border border-border overflow-hidden">
+      <div className="relative w-full max-w-xs sm:max-w-md h-40 sm:h-48 bg-muted/20 rounded-xl border border-border overflow-hidden">
         <motion.div
           className="absolute bottom-0 left-0 right-0 bg-primary/10"
           animate={{
@@ -106,7 +106,7 @@ export const CrashGame = ({ balance, onBet, onWin }: CrashGameProps) => {
         
         <div className="absolute inset-0 flex items-center justify-center">
           <motion.span
-            className={`text-6xl font-bold ${
+            className={`text-5xl sm:text-6xl font-bold ${
               gameState === 'crashed' ? 'indicator-loss' : 
               cashedOut ? 'indicator-win' : 
               'text-foreground'
@@ -139,7 +139,7 @@ export const CrashGame = ({ balance, onBet, onWin }: CrashGameProps) => {
       </div>
 
       {/* Controls */}
-      <div className="w-full max-w-xs space-y-4">
+      <div className="w-full max-w-xs space-y-3 sm:space-y-4">
         {gameState === 'waiting' && (
           <>
             <BetControls
@@ -150,7 +150,7 @@ export const CrashGame = ({ balance, onBet, onWin }: CrashGameProps) => {
             <Button
               onClick={startGame}
               disabled={betAmount > balance}
-              className="w-full h-12 font-semibold bg-primary hover:bg-primary-glow"
+              className="w-full h-11 sm:h-12 font-semibold"
             >
               Start (${betAmount})
             </Button>
@@ -160,7 +160,8 @@ export const CrashGame = ({ balance, onBet, onWin }: CrashGameProps) => {
         {gameState === 'running' && !cashedOut && (
           <Button
             onClick={cashOut}
-            className="w-full h-16 text-xl font-bold bg-secondary hover:bg-secondary-glow"
+            className="w-full h-14 sm:h-16 text-lg sm:text-xl font-bold"
+            variant="secondary"
           >
             Cash Out (${(betAmount * multiplier).toFixed(2)})
           </Button>
@@ -169,7 +170,7 @@ export const CrashGame = ({ balance, onBet, onWin }: CrashGameProps) => {
         {(gameState === 'crashed' || cashedOut) && (
           <Button
             onClick={resetGame}
-            className="w-full h-12 font-semibold"
+            className="w-full h-11 sm:h-12 font-semibold"
           >
             Play Again
           </Button>

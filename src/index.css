@@ -219,6 +219,34 @@
     background: hsl(0 70% 50% / 0.15);
     color: hsl(0 70% 60%);
   }
+
+  /* History chips for games */
+  .history-chip {
+    @apply px-2 py-1 rounded text-xs font-medium;
+  }
+
+  .history-chip.win {
+    background: hsl(142 70% 45% / 0.15);
+    color: hsl(142 70% 55%);
+  }
+
+  .history-chip.loss {
+    background: hsl(0 70% 50% / 0.15);
+    color: hsl(0 70% 60%);
+  }
+
+  /* Casino win color */
+  .bg-casino-win {
+    background: hsl(142 70% 45%);
+  }
+
+  /* Glass nav */
+  .casino-nav-glass {
+    @apply fixed top-0 left-0 right-0 z-50 px-6 py-4;
+    background: hsl(var(--bg) / 0.9);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid hsl(var(--border));
+  }
 }
 
 @layer utilities {

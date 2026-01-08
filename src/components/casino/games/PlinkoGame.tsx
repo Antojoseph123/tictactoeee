@@ -13,27 +13,43 @@ const ROWS = 12;
 const MULTIPLIERS = [10, 3, 1.5, 1.2, 1, 0.5, 0.3, 0.5, 1, 1.2, 1.5, 3, 10];
 const BALL_COUNTS = [1, 3, 5, 10];
 
-export const PlinkoGame = ({ balance, onBet, onWin }: PlinkoGameProps) => {
+const PlinkoGame = ({ balance, onBet, onWin }: PlinkoGameProps) => {
   const [betAmount, setBetAmount] = useState(5);
   const [ballCount, setBallCount] = useState(1);
   const [isDropping, setIsDropping] = useState(false);
   const [sessionProfit, setSessionProfit] = useState(0);
   const [activeBallCount, setActiveBallCount] = useState(0);
+  const [canvasSize, setCanvasSize] = useState({ width: 400, height: 500 });
 
+  const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const engineRef = useRef<Matter.Engine | null>(null);
   const renderRef = useRef<Matter.Render | null>(null);
   const runnerRef = useRef<Matter.Runner | null>(null);
-  const activeBallsRef = useRef<Map<number, number>>(new Map()); // ballId -> betAmount
+  const activeBallsRef = useRef<Map<number, number>>(new Map());
   const sessionProfitRef = useRef(0);
+
+  // Handle responsive sizing
+  useEffect(() => {
+    const updateSize = () => {
+      if (!containerRef.current) return;
+      const containerWidth = containerRef.current.offsetWidth;
+      const maxWidth = Math.min(containerWidth - 16, 400);
+      const height = Math.round(maxWidth * 1.25);
+      setCanvasSize({ width: maxWidth, height });
+    };
+
+    updateSize();
+    window.addEventListener('resize', updateSize);
+    return () => window.removeEventListener('resize', updateSize);
+  }, []);
 
   // Initialize physics engine
   useEffect(() => {
     if (!canvasRef.current) return;
 
     const canvas = canvasRef.current;
-    const width = 400;
-    const height = 500;
+    const { width, height } = canvasSize;
 
     const engine = Matter.Engine.create({
       gravity: { x: 0, y: 1.2 },
@@ -176,7 +192,7 @@ export const PlinkoGame = ({ balance, onBet, onWin }: PlinkoGameProps) => {
         activeBallsRef.current.clear();
       }
     };
-  }, [onWin]);
+  }, [onWin, canvasSize]);
 
   const spawnBall = useCallback((betAmt: number) => {
     if (!engineRef.current) return;
@@ -185,8 +201,10 @@ export const PlinkoGame = ({ balance, onBet, onWin }: PlinkoGameProps) => {
     activeBallsRef.current.set(ballId, betAmt);
     setActiveBallCount(activeBallsRef.current.size);
 
+    const { width } = canvasSize;
     const randomOffset = (Math.random() - 0.5) * 30;
-    const ball = Matter.Bodies.circle(200 + randomOffset, 10, 8, {
+    const ballRadius = Math.max(6, width / 50);
+    const ball = Matter.Bodies.circle(width / 2 + randomOffset, 10, ballRadius, {
       restitution: 0.6,
       friction: 0.1,
       frictionAir: 0.01,
@@ -202,8 +220,7 @@ export const PlinkoGame = ({ balance, onBet, onWin }: PlinkoGameProps) => {
       if (activeBallsRef.current.has(ballId) && engineRef.current) {
         activeBallsRef.current.delete(ballId);
 
-        const width = 400;
-        const bucketWidth = width / MULTIPLIERS.length;
+        const bucketWidth = canvasSize.width / MULTIPLIERS.length;
         const bucketIndex = Math.max(0, Math.min(MULTIPLIERS.length - 1, Math.floor(ball.position.x / bucketWidth)));
         const multiplier = MULTIPLIERS[bucketIndex] || 1;
         const winAmount = betAmt * multiplier;
@@ -221,7 +238,7 @@ export const PlinkoGame = ({ balance, onBet, onWin }: PlinkoGameProps) => {
         }
       }
     }, 7000);
-  }, [onWin]);
+  }, [onWin, canvasSize]);
 
   const dropBalls = useCallback(async () => {
     if (!engineRef.current) return;
@@ -248,15 +265,15 @@ export const PlinkoGame = ({ balance, onBet, onWin }: PlinkoGameProps) => {
   const totalCost = betAmount * ballCount;
 
   return (
-    <div className="flex flex-col items-center gap-6 p-6">
+    <div className="flex flex-col items-center gap-4 sm:gap-6 p-4 sm:p-6 w-full">
       <div className="text-center">
-        <h2 className="text-2xl font-semibold mb-2">Plinko</h2>
-        <p className="text-sm text-text-muted">Drop balls and watch them bounce</p>
+        <h2 className="text-xl sm:text-2xl font-semibold mb-1 sm:mb-2">Plinko</h2>
+        <p className="text-xs sm:text-sm text-muted-foreground">Drop balls and watch them bounce</p>
       </div>
 
       {/* Plinko Board */}
-      <div className="relative bg-surface rounded-xl overflow-hidden">
-        <canvas ref={canvasRef} width={400} height={500} className="block" />
+      <div ref={containerRef} className="relative bg-muted/20 rounded-xl overflow-hidden w-full max-w-md border border-border">
+        <canvas ref={canvasRef} width={canvasSize.width} height={canvasSize.height} className="block mx-auto" />
         
         {/* Active balls counter */}
         {activeBallCount > 0 && (
@@ -282,13 +299,13 @@ export const PlinkoGame = ({ balance, onBet, onWin }: PlinkoGameProps) => {
 
       {/* Session profit */}
       {(isDropping || sessionProfit !== 0) && (
-        <p className={`text-lg font-semibold ${sessionProfit >= 0 ? 'text-primary' : 'text-red-500'}`}>
+        <p className={`text-base sm:text-lg font-semibold ${sessionProfit >= 0 ? 'indicator-win' : 'indicator-loss'}`}>
           {sessionProfit >= 0 ? '+' : ''}${sessionProfit.toFixed(2)}
         </p>
       )}
 
       {/* Controls */}
-      <div className="w-full max-w-sm space-y-4">
+      <div className="w-full max-w-sm space-y-3 sm:space-y-4">
         <BetControls
           betAmount={betAmount}
           setBetAmount={setBetAmount}
@@ -298,17 +315,17 @@ export const PlinkoGame = ({ balance, onBet, onWin }: PlinkoGameProps) => {
 
         {/* Ball count selector */}
         <div className="space-y-2">
-          <label className="text-xs text-text-muted uppercase tracking-wide">Balls</label>
+          <label className="text-xs text-muted-foreground uppercase tracking-wide">Balls</label>
           <div className="flex gap-2">
             {BALL_COUNTS.map((count) => (
               <button
                 key={count}
                 onClick={() => setBallCount(count)}
                 disabled={isDropping}
-                className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`flex-1 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
                   ballCount === count
-                    ? 'bg-primary text-white'
-                    : 'bg-surface-elevated text-text-muted hover:text-text'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted text-muted-foreground hover:text-foreground'
                 } disabled:opacity-50`}
               >
                 {count}x
@@ -320,7 +337,7 @@ export const PlinkoGame = ({ balance, onBet, onWin }: PlinkoGameProps) => {
         <Button
           onClick={dropBalls}
           disabled={isDropping || totalCost > balance}
-          className="w-full h-12 font-semibold bg-primary hover:bg-primary-hover"
+          className="w-full h-11 sm:h-12 font-semibold"
         >
           {isDropping 
             ? `Dropping... (${activeBallCount})` 
@@ -331,3 +348,5 @@ export const PlinkoGame = ({ balance, onBet, onWin }: PlinkoGameProps) => {
     </div>
   );
 };
+
+export { PlinkoGame };
