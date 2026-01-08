@@ -7,67 +7,63 @@
 
 @layer base {
   :root {
-    /* Casino Dark Only - No light mode */
-    --background: 220 20% 4%;
-    --foreground: 0 0% 95%;
+    /* Base */
+    --bg: 220 18% 5%;
+    --surface: 220 16% 8%;
+    --surface-elevated: 220 14% 11%;
 
-    /* Surfaces */
-    --card: 220 18% 7%;
-    --card-foreground: 0 0% 95%;
-
-    --popover: 220 18% 8%;
-    --popover-foreground: 0 0% 95%;
-
-    /* Casino Red Primary */
-    --primary: 0 72% 45%;
+    /* Primary (Casino Red - Burgundy/Oxblood) */
+    --primary: 355 78% 46%;
+    --primary-hover: 355 82% 52%;
+    --primary-muted: 355 45% 30%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 0 72% 55%;
 
-    /* Muted Gold Accent */
-    --secondary: 38 50% 45%;
-    --secondary-foreground: 0 0% 100%;
-    --secondary-glow: 38 50% 55%;
-
-    /* Surface variants */
-    --muted: 220 15% 10%;
-    --muted-foreground: 220 10% 55%;
-
-    --accent: 38 50% 45%;
+    /* Accent (Gold / Brass) */
+    --accent: 42 65% 55%;
+    --accent-muted: 42 40% 35%;
     --accent-foreground: 0 0% 100%;
+
+    /* Text */
+    --text: 0 0% 96%;
+    --text-muted: 220 8% 65%;
+    --text-dim: 220 6% 45%;
+
+    /* Borders */
+    --border: 0 0% 100% / 0.06;
+    --border-strong: 0 0% 100% / 0.12;
+
+    /* Semantic mappings for shadcn compatibility */
+    --background: 220 18% 5%;
+    --foreground: 0 0% 96%;
+
+    --card: 220 16% 8%;
+    --card-foreground: 0 0% 96%;
+
+    --popover: 220 16% 8%;
+    --popover-foreground: 0 0% 96%;
+
+    --secondary: 42 65% 55%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 220 14% 11%;
+    --muted-foreground: 220 8% 65%;
 
     --destructive: 0 70% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 15% 12%;
-    --input: 220 15% 10%;
-    --ring: 0 72% 45%;
+    --input: 220 16% 8%;
+    --ring: 355 78% 46%;
 
     --radius: 0.75rem;
 
-    /* Glass effects */
-    --glass-bg: 220 20% 100%;
-    --glass-border: 220 15% 100%;
-    --glass-shadow: 0 0% 0%;
-
-    /* Shadows */
-    --shadow-sm: 0 1px 2px hsl(0 0% 0% / 0.4);
-    --shadow-md: 0 4px 12px hsl(0 0% 0% / 0.5);
-    --shadow-lg: 0 12px 40px hsl(0 0% 0% / 0.6);
-    --shadow-glow: 0 0 60px hsl(0 72% 45% / 0.15);
-
-    --sidebar-background: 220 18% 6%;
-    --sidebar-foreground: 0 0% 95%;
-    --sidebar-primary: 0 72% 45%;
+    --sidebar-background: 220 18% 5%;
+    --sidebar-foreground: 0 0% 96%;
+    --sidebar-primary: 355 78% 46%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 15% 10%;
-    --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-border: 220 15% 12%;
-    --sidebar-ring: 0 72% 45%;
-  }
-
-  /* Force dark mode only */
-  .dark {
-    /* Same as root - casino is always dark */
+    --sidebar-accent: 220 14% 11%;
+    --sidebar-accent-foreground: 0 0% 96%;
+    --sidebar-border: 0 0% 100% / 0.06;
+    --sidebar-ring: 355 78% 46%;
   }
 }
 
@@ -81,9 +77,10 @@
   }
 
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply antialiased;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: hsl(var(--background));
+    background: hsl(var(--bg));
+    color: hsl(var(--text));
     min-height: 100vh;
   }
 }
@@ -93,16 +90,16 @@
   .casino-header {
     @apply fixed top-0 left-0 right-0 z-50;
     @apply flex items-center justify-between px-6 py-4;
-    background: hsl(var(--background) / 0.95);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid hsl(var(--border) / 0.5);
+    background: hsl(var(--bg) / 0.95);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-bottom: 1px solid hsl(var(--border));
   }
 
   /* Casino Logo */
   .casino-logo {
     @apply text-xl font-semibold tracking-tight;
-    color: hsl(var(--foreground));
+    color: hsl(var(--text));
   }
 
   .casino-logo-accent {
@@ -111,61 +108,67 @@
 
   /* Game Card */
   .game-card {
-    @apply relative overflow-hidden rounded-xl;
+    @apply relative overflow-hidden;
+    border-radius: 14px;
     @apply transition-all duration-300 ease-out;
-    background: hsl(var(--card));
+    background: hsl(var(--surface));
     border: 1px solid hsl(var(--border));
   }
 
   .game-card:hover {
-    border-color: hsl(var(--border) / 0.8);
+    border-color: hsl(var(--border-strong));
     transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
   }
 
   /* Balance Display */
   .balance-display {
-    @apply flex items-center gap-2 px-4 py-2 rounded-lg;
-    background: hsl(var(--muted));
+    @apply flex items-center gap-2 px-4 py-2;
+    border-radius: 14px;
+    background: hsl(var(--surface));
     border: 1px solid hsl(var(--border));
   }
 
   /* Game Shell */
   .game-shell {
     @apply w-full max-w-4xl mx-auto;
-    @apply rounded-xl overflow-hidden;
-    background: hsl(var(--card));
+    border-radius: 18px;
+    overflow: hidden;
+    background: hsl(var(--surface));
     border: 1px solid hsl(var(--border));
   }
 
   /* Bet Controls */
   .bet-input {
     @apply h-12 text-center text-lg font-medium;
-    background: hsl(var(--muted));
+    background: hsl(var(--surface-elevated));
     border: 1px solid hsl(var(--border));
   }
 
   /* Minimal Button */
   .btn-minimal {
     @apply px-6 py-3 font-medium transition-all duration-200;
-    @apply rounded-lg text-foreground/80 hover:text-foreground;
+    border-radius: 14px;
+    color: hsl(var(--text-muted));
     background: transparent;
     border: 1px solid hsl(var(--border));
   }
 
   .btn-minimal:hover {
-    background: hsl(var(--muted) / 0.5);
+    color: hsl(var(--text));
+    background: hsl(var(--surface));
   }
 
   /* Primary Action Button */
   .btn-primary {
     @apply px-8 py-4 font-semibold transition-all duration-200;
-    @apply rounded-lg text-primary-foreground;
+    border-radius: 14px;
+    color: hsl(var(--primary-foreground));
     background: hsl(var(--primary));
   }
 
   .btn-primary:hover {
-    background: hsl(var(--primary-glow));
+    background: hsl(var(--primary-hover));
   }
 
   .btn-primary:disabled {
@@ -179,13 +182,14 @@
   }
 
   .indicator-loss {
-    color: hsl(var(--destructive));
+    color: hsl(var(--primary));
   }
 
   /* History chip */
   .history-chip {
-    @apply px-2 py-1 text-xs font-medium rounded;
-    background: hsl(var(--muted));
+    @apply px-2 py-1 text-xs font-medium;
+    border-radius: 6px;
+    background: hsl(var(--surface-elevated));
   }
 
   .history-chip.win {
@@ -194,18 +198,16 @@
   }
 
   .history-chip.loss {
-    background: hsl(0 70% 45% / 0.15);
-    color: hsl(0 70% 55%);
+    background: hsl(355 78% 46% / 0.15);
+    color: hsl(355 78% 55%);
   }
 }
 
 @layer utilities {
-  /* Subtle fade animation */
   .animate-fade-in {
     animation: fade-in 0.3s ease-out;
   }
 
-  /* Pulse for live elements */
   .animate-pulse-subtle {
     animation: pulse-subtle 2s ease-in-out infinite;
   }
