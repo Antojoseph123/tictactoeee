@@ -7,68 +7,64 @@
 
 @layer base {
   :root {
-    /* Base */
-    --bg: 220 18% 5%;
-    --surface: 220 16% 8%;
-    --surface-elevated: 220 14% 11%;
+    /* Stake/Rainbet style - dark blue-gray */
+    --bg: 222 47% 8%;
+    --surface: 222 41% 11%;
+    --surface-elevated: 222 35% 14%;
+    --surface-hover: 222 30% 17%;
 
-    /* Primary (Casino Red - Burgundy/Oxblood) */
-    --primary: 355 78% 46%;
-    --primary-hover: 355 82% 52%;
-    --primary-muted: 355 45% 30%;
+    /* Primary (Stake green / action color) */
+    --primary: 142 70% 45%;
+    --primary-hover: 142 70% 50%;
+    --primary-muted: 142 50% 30%;
     --primary-foreground: 0 0% 100%;
 
-    /* Accent (Gold / Brass) */
-    --accent: 42 65% 55%;
-    --accent-muted: 42 40% 35%;
+    /* Accent (blue for highlights) */
+    --accent: 217 91% 60%;
+    --accent-muted: 217 70% 40%;
     --accent-foreground: 0 0% 100%;
 
     /* Text */
-    --text: 0 0% 96%;
-    --text-muted: 220 8% 65%;
-    --text-dim: 220 6% 45%;
+    --text: 0 0% 95%;
+    --text-muted: 222 15% 60%;
+    --text-dim: 222 15% 40%;
 
-    /* Borders */
-    --border: 0 0% 100% / 0.06;
-    --border-strong: 0 0% 100% / 0.12;
-
-    /* Liquid Glass */
-    --glass-bg: 220 16% 12% / 0.6;
-    --glass-border: 0 0% 100% / 0.08;
-    --glass-highlight: 0 0% 100% / 0.05;
+    /* Borders - very subtle */
+    --border: 222 30% 18%;
+    --border-strong: 222 25% 25%;
 
     /* Semantic mappings for shadcn compatibility */
-    --background: 220 18% 5%;
-    --foreground: 0 0% 96%;
+    --background: 222 47% 8%;
+    --foreground: 0 0% 95%;
 
-    --card: 220 16% 8%;
-    --card-foreground: 0 0% 96%;
+    --card: 222 41% 11%;
+    --card-foreground: 0 0% 95%;
 
-    --popover: 220 16% 8%;
-    --popover-foreground: 0 0% 96%;
+    --popover: 222 41% 11%;
+    --popover-foreground: 0 0% 95%;
 
-    --secondary: 42 65% 55%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 222 35% 14%;
+    --secondary-foreground: 0 0% 95%;
 
-    --muted: 220 14% 11%;
-    --muted-foreground: 220 8% 65%;
+    --muted: 222 35% 14%;
+    --muted-foreground: 222 15% 60%;
 
     --destructive: 0 70% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --input: 220 16% 8%;
-    --ring: 355 78% 46%;
+    --input: 222 41% 11%;
+    --ring: 142 70% 45%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
 
-    --sidebar-background: 220 18% 5%;
-    --sidebar-foreground: 0 0% 96%;
-    --sidebar-primary: 355 78% 46%;
+    --sidebar-background: 222 47% 8%;
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: 142 70% 45%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 14% 11%;
-    --sidebar-accent-foreground: 0 0% 96%;
-    --sidebar-border: 0 0% 100% / 0.06;
-    --sidebar-ring: 355 78% 46%;
+    --sidebar-accent: 222 35% 14%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 222 30% 18%;
+    --sidebar-ring: 142 70% 45%;
   }
 }
 
@@ -91,316 +87,153 @@
 }
 
 @layer components {
-  /* Liquid Glass Panel */
-  .glass-panel {
-    @apply relative overflow-hidden;
-    background: hsl(var(--glass-bg));
-    backdrop-filter: blur(40px) saturate(150%);
-    -webkit-backdrop-filter: blur(40px) saturate(150%);
-    border: 1px solid hsl(var(--glass-border));
-    border-radius: 24px;
+  /* Simple card */
+  .card-base {
+    background: hsl(var(--surface));
+    border-radius: 8px;
   }
 
-  .glass-panel::before {
-    content: '';
-    @apply absolute inset-0 pointer-events-none;
-    background: linear-gradient(
-      135deg,
-      hsl(var(--glass-highlight)) 0%,
-      transparent 50%
-    );
-    border-radius: inherit;
-  }
-
-  /* Glass Card */
-  .glass-card {
-    @apply relative overflow-hidden;
-    background: linear-gradient(
-      145deg,
-      hsl(220 16% 10% / 0.8),
-      hsl(220 16% 8% / 0.6)
-    );
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border: 1px solid hsl(0 0% 100% / 0.06);
-    border-radius: 20px;
-  }
-
-  .glass-card::before {
-    content: '';
-    @apply absolute inset-x-0 top-0 h-px;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      hsl(0 0% 100% / 0.1),
-      transparent
-    );
-  }
-
-  /* Casino Nav Glass */
-  .casino-nav-glass {
-    @apply fixed top-4 left-1/2 -translate-x-1/2 z-50;
-    background: hsl(220 16% 10% / 0.7);
-    backdrop-filter: blur(40px) saturate(180%);
-    -webkit-backdrop-filter: blur(40px) saturate(180%);
-    border: 1px solid hsl(0 0% 100% / 0.08);
-    border-radius: 20px;
-    padding: 12px 24px;
-  }
-
-  .casino-nav-glass::before {
-    content: '';
-    @apply absolute inset-x-0 top-0 h-px rounded-t-[20px];
-    background: linear-gradient(
-      90deg,
-      transparent,
-      hsl(0 0% 100% / 0.15),
-      transparent
-    );
-  }
-
-  /* Hero Glow */
-  .hero-glow {
-    @apply absolute pointer-events-none;
-    width: 600px;
-    height: 600px;
-    background: radial-gradient(
-      circle,
-      hsl(355 78% 46% / 0.15) 0%,
-      hsl(355 78% 46% / 0.05) 40%,
-      transparent 70%
-    );
-    filter: blur(60px);
-  }
-
-  /* Game Card Premium */
-  .game-card-premium {
+  /* Game tile - Stake style */
+  .game-tile {
     @apply relative overflow-hidden cursor-pointer;
-    background: linear-gradient(
-      165deg,
-      hsl(220 16% 12% / 0.9),
-      hsl(220 16% 8% / 0.7)
-    );
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid hsl(0 0% 100% / 0.06);
-    border-radius: 24px;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    background: hsl(var(--surface));
+    border-radius: 12px;
+    transition: all 0.15s ease;
   }
 
-  .game-card-premium::before {
-    content: '';
-    @apply absolute inset-x-0 top-0 h-px;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      hsl(0 0% 100% / 0.12),
-      transparent
-    );
-  }
-
-  .game-card-premium::after {
-    content: '';
-    @apply absolute inset-0 opacity-0 transition-opacity duration-500;
-    background: linear-gradient(
-      165deg,
-      hsl(355 78% 46% / 0.1),
-      transparent 60%
-    );
-  }
-
-  .game-card-premium:hover {
-    transform: translateY(-8px) scale(1.02);
-    border-color: hsl(355 78% 46% / 0.3);
-    box-shadow: 
-      0 20px 60px -20px hsl(355 78% 46% / 0.3),
-      0 0 0 1px hsl(355 78% 46% / 0.1);
-  }
-
-  .game-card-premium:hover::after {
-    opacity: 1;
-  }
-
-  /* Feature Card */
-  .feature-card {
-    @apply relative p-8;
-    background: linear-gradient(
-      160deg,
-      hsl(220 16% 10% / 0.5),
-      hsl(220 16% 8% / 0.3)
-    );
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid hsl(0 0% 100% / 0.05);
-    border-radius: 20px;
-  }
-
-  /* Stat Card */
-  .stat-card {
-    @apply text-center p-6;
-    background: hsl(220 16% 10% / 0.4);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid hsl(0 0% 100% / 0.04);
-    border-radius: 16px;
-  }
-
-  /* Primary CTA Button */
-  .btn-cta {
-    @apply relative px-10 py-5 font-semibold text-lg overflow-hidden;
-    background: linear-gradient(
-      135deg,
-      hsl(355 78% 50%),
-      hsl(355 78% 40%)
-    );
-    border-radius: 16px;
-    box-shadow: 
-      0 0 0 1px hsl(355 78% 50% / 0.5),
-      0 8px 32px -8px hsl(355 78% 46% / 0.5),
-      inset 0 1px 0 hsl(0 0% 100% / 0.1);
-    transition: all 0.3s ease;
-  }
-
-  .btn-cta::before {
-    content: '';
-    @apply absolute inset-x-0 top-0 h-1/2;
-    background: linear-gradient(
-      180deg,
-      hsl(0 0% 100% / 0.15),
-      transparent
-    );
-    border-radius: 16px 16px 0 0;
-  }
-
-  .btn-cta:hover {
+  .game-tile:hover {
+    background: hsl(var(--surface-hover));
     transform: translateY(-2px);
-    box-shadow: 
-      0 0 0 1px hsl(355 78% 55% / 0.6),
-      0 12px 40px -8px hsl(355 78% 46% / 0.6),
-      inset 0 1px 0 hsl(0 0% 100% / 0.15);
   }
 
-  /* Balance Display Premium */
-  .balance-display-premium {
-    @apply relative overflow-hidden;
-    background: linear-gradient(
-      145deg,
-      hsl(220 16% 11% / 0.9),
-      hsl(220 16% 8% / 0.7)
-    );
-    backdrop-filter: blur(32px);
-    -webkit-backdrop-filter: blur(32px);
-    border: 1px solid hsl(0 0% 100% / 0.06);
-    border-radius: 20px;
+  /* Nav item */
+  .nav-item {
+    @apply flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium;
+    color: hsl(var(--text-muted));
+    transition: all 0.15s ease;
   }
 
-  .balance-display-premium::before {
-    content: '';
-    @apply absolute inset-x-0 top-0 h-px;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      hsl(42 65% 55% / 0.3),
-      transparent
-    );
+  .nav-item:hover {
+    background: hsl(var(--surface));
+    color: hsl(var(--text));
+  }
+
+  .nav-item.active {
+    background: hsl(var(--surface));
+    color: hsl(var(--text));
+  }
+
+  /* Primary button - green */
+  .btn-primary {
+    @apply px-4 py-2.5 font-semibold text-sm rounded-lg;
+    background: hsl(var(--primary));
+    color: white;
+    transition: all 0.15s ease;
+  }
+
+  .btn-primary:hover {
+    background: hsl(var(--primary-hover));
+  }
+
+  /* Secondary button */
+  .btn-secondary {
+    @apply px-4 py-2.5 font-medium text-sm rounded-lg;
+    background: hsl(var(--surface-elevated));
+    color: hsl(var(--text));
+    transition: all 0.15s ease;
+  }
+
+  .btn-secondary:hover {
+    background: hsl(var(--surface-hover));
+  }
+
+  /* Balance chip */
+  .balance-chip {
+    @apply flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium;
+    background: hsl(var(--surface));
+  }
+
+  /* Category pill */
+  .category-pill {
+    @apply px-3 py-1.5 rounded-full text-xs font-medium;
+    background: hsl(var(--surface));
+    color: hsl(var(--text-muted));
+    transition: all 0.15s ease;
+  }
+
+  .category-pill:hover,
+  .category-pill.active {
+    background: hsl(var(--primary));
+    color: white;
   }
 
   /* Game Shell */
   .game-shell {
     @apply w-full max-w-4xl mx-auto;
-    border-radius: 24px;
+    border-radius: 12px;
     overflow: hidden;
     background: hsl(var(--surface));
-    border: 1px solid hsl(var(--border));
   }
 
   /* Bet Controls */
   .bet-input {
-    @apply h-12 text-center text-lg font-medium;
+    @apply h-11 text-center text-base font-medium rounded-lg;
     background: hsl(var(--surface-elevated));
     border: 1px solid hsl(var(--border));
-    border-radius: 12px;
   }
 
   /* Win/Loss indicators */
   .indicator-win {
-    color: hsl(142 70% 45%);
+    color: hsl(142 70% 50%);
   }
 
   .indicator-loss {
-    color: hsl(var(--primary));
+    color: hsl(0 70% 55%);
   }
 
-  /* History chip */
-  .history-chip {
-    @apply px-2 py-1 text-xs font-medium;
-    border-radius: 6px;
-    background: hsl(var(--surface-elevated));
+  /* Sidebar */
+  .sidebar {
+    @apply fixed left-0 top-0 bottom-0 w-56 p-3;
+    background: hsl(var(--bg));
+    border-right: 1px solid hsl(var(--border));
   }
 
-  .history-chip.win {
+  /* Top bar */
+  .topbar {
+    @apply fixed top-0 right-0 left-56 h-14 px-4 flex items-center justify-between;
+    background: hsl(var(--bg));
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  /* Live bet chip */
+  .live-chip {
+    @apply inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-medium;
+  }
+
+  .live-chip.win {
     background: hsl(142 70% 45% / 0.15);
     color: hsl(142 70% 55%);
   }
 
-  .history-chip.loss {
-    background: hsl(355 78% 46% / 0.15);
-    color: hsl(355 78% 55%);
-  }
-
-  /* Divider with glow */
-  .divider-glow {
-    @apply h-px w-full;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      hsl(0 0% 100% / 0.1) 20%,
-      hsl(0 0% 100% / 0.15) 50%,
-      hsl(0 0% 100% / 0.1) 80%,
-      transparent
-    );
-  }
-
-  /* Section heading */
-  .section-label {
-    @apply text-xs font-medium uppercase tracking-[0.2em];
-    color: hsl(var(--accent));
+  .live-chip.loss {
+    background: hsl(0 70% 50% / 0.15);
+    color: hsl(0 70% 60%);
   }
 }
 
 @layer utilities {
   .animate-fade-in {
-    animation: fade-in 0.5s ease-out;
-  }
-
-  .animate-float {
-    animation: float 6s ease-in-out infinite;
-  }
-
-  .text-gradient-gold {
-    background: linear-gradient(135deg, hsl(42 65% 60%), hsl(42 50% 45%));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    animation: fade-in 0.2s ease-out;
   }
 }
 
 @keyframes fade-in {
   from {
     opacity: 0;
-    transform: translateY(16px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-20px);
   }
 }
