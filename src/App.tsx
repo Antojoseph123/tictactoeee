@@ -12,6 +12,7 @@ import LeaderboardPage from "./pages/LeaderboardPage";
 import ProfilePage from "./pages/ProfilePage";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import Casino from "./pages/Casino";
 
 // Admin pages
 import AdminLayout from "./pages/admin/AdminLayout";
@@ -37,6 +38,7 @@ const App = () => (
               <Route path="/play/:gameId" element={<PlayGame />} />
               <Route path="/leaderboard" element={<LeaderboardPage />} />
               <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/casino" element={<Casino />} />
               
               <Route path="/auth" element={<Auth />} />
               

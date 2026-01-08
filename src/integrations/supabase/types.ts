@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      casino_balances: {
+        Row: {
+          balance: number
+          created_at: string
+          id: string
+          total_wagered: number
+          total_won: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          id?: string
+          total_wagered?: number
+          total_won?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          id?: string
+          total_wagered?: number
+          total_won?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       friendships: {
         Row: {
           created_at: string
