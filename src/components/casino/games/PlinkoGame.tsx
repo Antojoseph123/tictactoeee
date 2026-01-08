@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { BetControls } from '../BetControls';
-import Matter from 'matter-js';
+import * as Matter from 'matter-js';
 
 interface PlinkoGameProps {
   balance: number;
@@ -16,7 +16,7 @@ export const PlinkoGame = ({ balance, onBet, onWin }: PlinkoGameProps) => {
   const [betAmount, setBetAmount] = useState(5);
   const [isDropping, setIsDropping] = useState(false);
   const [lastWin, setLastWin] = useState<{ multiplier: number; amount: number } | null>(null);
-  
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const engineRef = useRef<Matter.Engine | null>(null);
   const renderRef = useRef<Matter.Render | null>(null);
@@ -82,7 +82,7 @@ export const PlinkoGame = ({ balance, onBet, onWin }: PlinkoGameProps) => {
           restitution: 0.5,
           friction: 0.1,
           render: {
-            fillStyle: 'hsl(222, 30%, 25%)',
+            fillStyle: 'hsl(222 30% 25%)',
           },
           label: 'peg',
         });
@@ -97,13 +97,9 @@ export const PlinkoGame = ({ balance, onBet, onWin }: PlinkoGameProps) => {
     };
 
     // Left wall
-    Matter.Composite.add(engine.world, 
-      Matter.Bodies.rectangle(-10, height / 2, 20, height, wallOptions)
-    );
+    Matter.Composite.add(engine.world, Matter.Bodies.rectangle(-10, height / 2, 20, height, wallOptions));
     // Right wall
-    Matter.Composite.add(engine.world, 
-      Matter.Bodies.rectangle(width + 10, height / 2, 20, height, wallOptions)
-    );
+    Matter.Composite.add(engine.world, Matter.Bodies.rectangle(width + 10, height / 2, 20, height, wallOptions));
 
     // Create bucket dividers and sensors
     const bucketY = height - 30;
@@ -111,78 +107,90 @@ export const PlinkoGame = ({ balance, onBet, onWin }: PlinkoGameProps) => {
 
     for (let i = 0; i <= MULTIPLIERS.length; i++) {
       const x = i * bucketWidth;
-      // Divider
       const divider = Matter.Bodies.rectangle(x, bucketY, 4, 40, {
         isStatic: true,
-        render: { fillStyle: 'hsl(222, 30%, 20%)' },
+        render: { fillStyle: 'hsl(222 30% 20%)' },
         chamfer: { radius: 2 },
+        label: 'divider',
       });
       Matter.Composite.add(engine.world, divider);
     }
 
-    // Create bucket sensors
-    for (let i = 0; i < MULTIPLIERS.length; i++) {
-      const x = (i + 0.5) * bucketWidth;
-      const sensor = Matter.Bodies.rectangle(x, height - 10, bucketWidth - 6, 20, {
-        isStatic: true,
-        isSensor: true,
-        render: { fillStyle: 'transparent' },
-        label: `bucket-${i}`,
-      });
-      Matter.Composite.add(engine.world, sensor);
-    }
+    // A floor so balls never fall into the void
+    const floor = Matter.Bodies.rectangle(width / 2, height + 20, width + 80, 60, {
+      isStatic: true,
+      render: { fillStyle: 'transparent' },
+      label: 'floor',
+    });
+    Matter.Composite.add(engine.world, floor);
+
+    const settleBall = (ball: Matter.Body) => {
+      const ballId = parseInt(ball.label.split('-')[1]);
+      if (!activeBallsRef.current.has(ballId)) return;
+
+      activeBallsRef.current.delete(ballId);
+
+      const bucketIndex = Math.max(
+        0,
+        Math.min(MULTIPLIERS.length - 1, Math.floor(ball.position.x / bucketWidth))
+      );
+      const multiplier = MULTIPLIERS[bucketIndex] || 1;
+      const winAmount = betAmountRef.current * multiplier;
+
+      setLastWin({ multiplier, amount: winAmount });
+      onWin(winAmount);
+
+      setTimeout(() => {
+        Matter.Composite.remove(engine.world, ball);
+        if (activeBallsRef.current.size === 0) setIsDropping(false);
+      }, 250);
+    };
 
     // Start rendering and physics
     Matter.Render.run(render);
     Matter.Runner.run(runner, engine);
 
-    // Collision detection for buckets
-    Matter.Events.on(engine, 'collisionStart', (event) => {
-      event.pairs.forEach((pair) => {
+    const onCollisionStart = (event: Matter.IEventCollision<Matter.Engine>) => {
+      for (const pair of event.pairs) {
         const { bodyA, bodyB } = pair;
-        
-        let ball: Matter.Body | null = null;
-        let bucket: Matter.Body | null = null;
 
-        if (bodyA.label.startsWith('ball-') && bodyB.label.startsWith('bucket-')) {
-          ball = bodyA;
-          bucket = bodyB;
-        } else if (bodyB.label.startsWith('ball-') && bodyA.label.startsWith('bucket-')) {
-          ball = bodyB;
-          bucket = bodyA;
-        }
+        // Settle as soon as a ball touches the floor
+        if (bodyA.label.startsWith('ball-') && bodyB.label === 'floor') settleBall(bodyA);
+        if (bodyB.label.startsWith('ball-') && bodyA.label === 'floor') settleBall(bodyB);
+      }
+    };
 
-        if (ball && bucket) {
-          const ballId = parseInt(ball.label.split('-')[1]);
-          const bucketIndex = parseInt(bucket.label.split('-')[1]);
-          
-          // Only process if this ball hasn't landed yet
-          if (activeBallsRef.current.has(ballId)) {
-            activeBallsRef.current.delete(ballId);
-            
-            const multiplier = MULTIPLIERS[bucketIndex] || 1;
-            const winAmount = betAmountRef.current * multiplier;
-            
-            setLastWin({ multiplier, amount: winAmount });
-            onWin(winAmount);
-            
-            // Remove ball after short delay
-            setTimeout(() => {
-              Matter.Composite.remove(engine.world, ball!);
-              if (activeBallsRef.current.size === 0) {
-                setIsDropping(false);
-              }
-            }, 500);
-          }
+    const onAfterUpdate = () => {
+      // Safety: if a ball is very low, settle it based on x-position
+      for (const body of engine.world.bodies) {
+        if (!body.label.startsWith('ball-')) continue;
+        if (body.position.y >= height - 18) {
+          settleBall(body);
         }
-      });
-    });
+      }
+    };
+
+    Matter.Events.on(engine, 'collisionStart', onCollisionStart);
+    Matter.Events.on(engine, 'afterUpdate', onAfterUpdate);
 
     return () => {
-      Matter.Render.stop(render);
-      Matter.Runner.stop(runner);
-      Matter.Engine.clear(engine);
-      render.canvas.remove();
+      // Important: do NOT remove the canvas element (React owns it)
+      Matter.Events.off(engine, 'collisionStart', onCollisionStart);
+
+      try {
+        Matter.Render.stop(render);
+        Matter.Runner.stop(runner);
+        Matter.World.clear(engine.world, false);
+        Matter.Engine.clear(engine);
+        // prevent memory leaks from cached textures
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (render as any).textures = {};
+      } finally {
+        engineRef.current = null;
+        renderRef.current = null;
+        runnerRef.current = null;
+        activeBallsRef.current.clear();
+      }
     };
   }, [onWin]);
 
@@ -206,32 +214,34 @@ export const PlinkoGame = ({ balance, onBet, onWin }: PlinkoGameProps) => {
       frictionAir: 0.01,
       density: 0.001,
       render: {
-        fillStyle: 'hsl(142, 70%, 45%)',
+        fillStyle: 'hsl(142 70% 45%)',
       },
       label: `ball-${ballId}`,
     });
 
     Matter.Composite.add(engineRef.current.world, ball);
 
-    // Safety timeout - if ball gets stuck
+    // Safety timeout - settle based on the ball's x-position
     setTimeout(() => {
       if (activeBallsRef.current.has(ballId) && engineRef.current) {
         activeBallsRef.current.delete(ballId);
-        Matter.Composite.remove(engineRef.current.world, ball);
-        
-        // Random bucket if ball got stuck
-        const randomBucket = Math.floor(Math.random() * MULTIPLIERS.length);
-        const multiplier = MULTIPLIERS[randomBucket];
+
+        const width = 400;
+        const bucketWidth = width / MULTIPLIERS.length;
+        const bucketIndex = Math.max(0, Math.min(MULTIPLIERS.length - 1, Math.floor(ball.position.x / bucketWidth)));
+        const multiplier = MULTIPLIERS[bucketIndex] || 1;
         const winAmount = betAmountRef.current * multiplier;
-        
+
         setLastWin({ multiplier, amount: winAmount });
         onWin(winAmount);
-        
+
+        Matter.Composite.remove(engineRef.current.world, ball);
+
         if (activeBallsRef.current.size === 0) {
           setIsDropping(false);
         }
       }
-    }, 8000);
+    }, 7000);
   }, [betAmount, onBet, onWin]);
 
   return (
