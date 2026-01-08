@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /* Premium Casino Typography */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 @layer base {
   :root {
@@ -31,6 +31,11 @@
     /* Borders */
     --border: 0 0% 100% / 0.06;
     --border-strong: 0 0% 100% / 0.12;
+
+    /* Liquid Glass */
+    --glass-bg: 220 16% 12% / 0.6;
+    --glass-border: 0 0% 100% / 0.08;
+    --glass-highlight: 0 0% 100% / 0.05;
 
     /* Semantic mappings for shadcn compatibility */
     --background: 220 18% 5%;
@@ -86,53 +91,224 @@
 }
 
 @layer components {
-  /* Casino Header */
-  .casino-header {
-    @apply fixed top-0 left-0 right-0 z-50;
-    @apply flex items-center justify-between px-6 py-4;
-    background: hsl(var(--bg) / 0.95);
+  /* Liquid Glass Panel */
+  .glass-panel {
+    @apply relative overflow-hidden;
+    background: hsl(var(--glass-bg));
+    backdrop-filter: blur(40px) saturate(150%);
+    -webkit-backdrop-filter: blur(40px) saturate(150%);
+    border: 1px solid hsl(var(--glass-border));
+    border-radius: 24px;
+  }
+
+  .glass-panel::before {
+    content: '';
+    @apply absolute inset-0 pointer-events-none;
+    background: linear-gradient(
+      135deg,
+      hsl(var(--glass-highlight)) 0%,
+      transparent 50%
+    );
+    border-radius: inherit;
+  }
+
+  /* Glass Card */
+  .glass-card {
+    @apply relative overflow-hidden;
+    background: linear-gradient(
+      145deg,
+      hsl(220 16% 10% / 0.8),
+      hsl(220 16% 8% / 0.6)
+    );
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
-    border-bottom: 1px solid hsl(var(--border));
+    border: 1px solid hsl(0 0% 100% / 0.06);
+    border-radius: 20px;
   }
 
-  /* Casino Logo */
-  .casino-logo {
-    @apply text-xl font-semibold tracking-tight;
-    color: hsl(var(--text));
+  .glass-card::before {
+    content: '';
+    @apply absolute inset-x-0 top-0 h-px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(0 0% 100% / 0.1),
+      transparent
+    );
   }
 
-  .casino-logo-accent {
-    color: hsl(var(--primary));
+  /* Casino Nav Glass */
+  .casino-nav-glass {
+    @apply fixed top-4 left-1/2 -translate-x-1/2 z-50;
+    background: hsl(220 16% 10% / 0.7);
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    border: 1px solid hsl(0 0% 100% / 0.08);
+    border-radius: 20px;
+    padding: 12px 24px;
   }
 
-  /* Game Card */
-  .game-card {
-    @apply relative overflow-hidden;
-    border-radius: 14px;
-    @apply transition-all duration-300 ease-out;
-    background: hsl(var(--surface));
-    border: 1px solid hsl(var(--border));
+  .casino-nav-glass::before {
+    content: '';
+    @apply absolute inset-x-0 top-0 h-px rounded-t-[20px];
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(0 0% 100% / 0.15),
+      transparent
+    );
   }
 
-  .game-card:hover {
-    border-color: hsl(var(--border-strong));
+  /* Hero Glow */
+  .hero-glow {
+    @apply absolute pointer-events-none;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(
+      circle,
+      hsl(355 78% 46% / 0.15) 0%,
+      hsl(355 78% 46% / 0.05) 40%,
+      transparent 70%
+    );
+    filter: blur(60px);
+  }
+
+  /* Game Card Premium */
+  .game-card-premium {
+    @apply relative overflow-hidden cursor-pointer;
+    background: linear-gradient(
+      165deg,
+      hsl(220 16% 12% / 0.9),
+      hsl(220 16% 8% / 0.7)
+    );
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid hsl(0 0% 100% / 0.06);
+    border-radius: 24px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .game-card-premium::before {
+    content: '';
+    @apply absolute inset-x-0 top-0 h-px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(0 0% 100% / 0.12),
+      transparent
+    );
+  }
+
+  .game-card-premium::after {
+    content: '';
+    @apply absolute inset-0 opacity-0 transition-opacity duration-500;
+    background: linear-gradient(
+      165deg,
+      hsl(355 78% 46% / 0.1),
+      transparent 60%
+    );
+  }
+
+  .game-card-premium:hover {
+    transform: translateY(-8px) scale(1.02);
+    border-color: hsl(355 78% 46% / 0.3);
+    box-shadow: 
+      0 20px 60px -20px hsl(355 78% 46% / 0.3),
+      0 0 0 1px hsl(355 78% 46% / 0.1);
+  }
+
+  .game-card-premium:hover::after {
+    opacity: 1;
+  }
+
+  /* Feature Card */
+  .feature-card {
+    @apply relative p-8;
+    background: linear-gradient(
+      160deg,
+      hsl(220 16% 10% / 0.5),
+      hsl(220 16% 8% / 0.3)
+    );
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid hsl(0 0% 100% / 0.05);
+    border-radius: 20px;
+  }
+
+  /* Stat Card */
+  .stat-card {
+    @apply text-center p-6;
+    background: hsl(220 16% 10% / 0.4);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid hsl(0 0% 100% / 0.04);
+    border-radius: 16px;
+  }
+
+  /* Primary CTA Button */
+  .btn-cta {
+    @apply relative px-10 py-5 font-semibold text-lg overflow-hidden;
+    background: linear-gradient(
+      135deg,
+      hsl(355 78% 50%),
+      hsl(355 78% 40%)
+    );
+    border-radius: 16px;
+    box-shadow: 
+      0 0 0 1px hsl(355 78% 50% / 0.5),
+      0 8px 32px -8px hsl(355 78% 46% / 0.5),
+      inset 0 1px 0 hsl(0 0% 100% / 0.1);
+    transition: all 0.3s ease;
+  }
+
+  .btn-cta::before {
+    content: '';
+    @apply absolute inset-x-0 top-0 h-1/2;
+    background: linear-gradient(
+      180deg,
+      hsl(0 0% 100% / 0.15),
+      transparent
+    );
+    border-radius: 16px 16px 0 0;
+  }
+
+  .btn-cta:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    box-shadow: 
+      0 0 0 1px hsl(355 78% 55% / 0.6),
+      0 12px 40px -8px hsl(355 78% 46% / 0.6),
+      inset 0 1px 0 hsl(0 0% 100% / 0.15);
   }
 
-  /* Balance Display */
-  .balance-display {
-    @apply flex items-center gap-2 px-4 py-2;
-    border-radius: 14px;
-    background: hsl(var(--surface));
-    border: 1px solid hsl(var(--border));
+  /* Balance Display Premium */
+  .balance-display-premium {
+    @apply relative overflow-hidden;
+    background: linear-gradient(
+      145deg,
+      hsl(220 16% 11% / 0.9),
+      hsl(220 16% 8% / 0.7)
+    );
+    backdrop-filter: blur(32px);
+    -webkit-backdrop-filter: blur(32px);
+    border: 1px solid hsl(0 0% 100% / 0.06);
+    border-radius: 20px;
+  }
+
+  .balance-display-premium::before {
+    content: '';
+    @apply absolute inset-x-0 top-0 h-px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(42 65% 55% / 0.3),
+      transparent
+    );
   }
 
   /* Game Shell */
   .game-shell {
     @apply w-full max-w-4xl mx-auto;
-    border-radius: 18px;
+    border-radius: 24px;
     overflow: hidden;
     background: hsl(var(--surface));
     border: 1px solid hsl(var(--border));
@@ -143,37 +319,7 @@
     @apply h-12 text-center text-lg font-medium;
     background: hsl(var(--surface-elevated));
     border: 1px solid hsl(var(--border));
-  }
-
-  /* Minimal Button */
-  .btn-minimal {
-    @apply px-6 py-3 font-medium transition-all duration-200;
-    border-radius: 14px;
-    color: hsl(var(--text-muted));
-    background: transparent;
-    border: 1px solid hsl(var(--border));
-  }
-
-  .btn-minimal:hover {
-    color: hsl(var(--text));
-    background: hsl(var(--surface));
-  }
-
-  /* Primary Action Button */
-  .btn-primary {
-    @apply px-8 py-4 font-semibold transition-all duration-200;
-    border-radius: 14px;
-    color: hsl(var(--primary-foreground));
-    background: hsl(var(--primary));
-  }
-
-  .btn-primary:hover {
-    background: hsl(var(--primary-hover));
-  }
-
-  .btn-primary:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+    border-radius: 12px;
   }
 
   /* Win/Loss indicators */
@@ -201,22 +347,48 @@
     background: hsl(355 78% 46% / 0.15);
     color: hsl(355 78% 55%);
   }
+
+  /* Divider with glow */
+  .divider-glow {
+    @apply h-px w-full;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(0 0% 100% / 0.1) 20%,
+      hsl(0 0% 100% / 0.15) 50%,
+      hsl(0 0% 100% / 0.1) 80%,
+      transparent
+    );
+  }
+
+  /* Section heading */
+  .section-label {
+    @apply text-xs font-medium uppercase tracking-[0.2em];
+    color: hsl(var(--accent));
+  }
 }
 
 @layer utilities {
   .animate-fade-in {
-    animation: fade-in 0.3s ease-out;
+    animation: fade-in 0.5s ease-out;
   }
 
-  .animate-pulse-subtle {
-    animation: pulse-subtle 2s ease-in-out infinite;
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .text-gradient-gold {
+    background: linear-gradient(135deg, hsl(42 65% 60%), hsl(42 50% 45%));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 }
 
 @keyframes fade-in {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(16px);
   }
   to {
     opacity: 1;
@@ -224,11 +396,11 @@
   }
 }
 
-@keyframes pulse-subtle {
+@keyframes float {
   0%, 100% {
-    opacity: 1;
+    transform: translateY(0);
   }
   50% {
-    opacity: 0.7;
+    transform: translateY(-20px);
   }
 }
