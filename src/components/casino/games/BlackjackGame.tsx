@@ -147,7 +147,7 @@ export const BlackjackGame = ({ balance, onBet, onWin }: BlackjackGameProps) => 
     <motion.div
       initial={{ scale: 0, rotateY: 180 }}
       animate={{ scale: 1, rotateY: 0 }}
-      className={`w-14 h-20 rounded-lg flex items-center justify-center text-lg font-bold shadow-lg ${
+      className={`w-11 h-16 sm:w-14 sm:h-20 rounded-lg flex items-center justify-center text-sm sm:text-lg font-bold shadow-lg ${
         hidden 
           ? 'bg-gradient-to-br from-primary to-primary/80' 
           : 'bg-white text-black'
@@ -162,20 +162,20 @@ export const BlackjackGame = ({ balance, onBet, onWin }: BlackjackGameProps) => 
   );
 
   return (
-    <div className="flex flex-col items-center gap-6 p-6">
+    <div className="flex flex-col items-center gap-4 sm:gap-6 p-4 sm:p-6">
       <div className="text-center">
-        <h2 className="text-2xl font-semibold text-foreground mb-2">Blackjack</h2>
-        <p className="text-sm text-muted-foreground">Get closer to 21 than the dealer</p>
+        <h2 className="text-xl sm:text-2xl font-semibold text-foreground mb-1 sm:mb-2">Blackjack</h2>
+        <p className="text-xs sm:text-sm text-muted-foreground">Get closer to 21 than the dealer</p>
       </div>
 
       {/* Game Area */}
-      <div className="w-full max-w-md p-6 bg-muted/20 rounded-xl border border-border">
+      <div className="w-full max-w-xs sm:max-w-md p-4 sm:p-6 bg-muted/20 rounded-xl border border-border">
         {/* Dealer Hand */}
-        <div className="mb-8">
-          <p className="text-sm text-muted-foreground mb-2">
+        <div className="mb-6 sm:mb-8">
+          <p className="text-xs sm:text-sm text-muted-foreground mb-2">
             Dealer {gameState !== 'betting' && gameState !== 'playing' && `(${calculateHand(dealerHand)})`}
           </p>
-          <div className="flex gap-2 min-h-[80px]">
+          <div className="flex gap-1.5 sm:gap-2 min-h-[64px] sm:min-h-[80px] flex-wrap">
             <AnimatePresence>
               {dealerHand.map((card, i) => (
                 <CardComponent 
@@ -190,10 +190,10 @@ export const BlackjackGame = ({ balance, onBet, onWin }: BlackjackGameProps) => 
 
         {/* Player Hand */}
         <div>
-          <p className="text-sm text-muted-foreground mb-2">
+          <p className="text-xs sm:text-sm text-muted-foreground mb-2">
             Your Hand {playerHand.length > 0 && `(${calculateHand(playerHand)})`}
           </p>
-          <div className="flex gap-2 min-h-[80px]">
+          <div className="flex gap-1.5 sm:gap-2 min-h-[64px] sm:min-h-[80px] flex-wrap">
             <AnimatePresence>
               {playerHand.map((card, i) => (
                 <CardComponent key={`${card.suit}${card.value}${i}`} card={card} />
@@ -221,7 +221,7 @@ export const BlackjackGame = ({ balance, onBet, onWin }: BlackjackGameProps) => 
       </div>
 
       {/* Controls */}
-      <div className="w-full max-w-xs space-y-4">
+      <div className="w-full max-w-xs space-y-3 sm:space-y-4">
         {gameState === 'betting' && (
           <>
             <BetControls
@@ -232,7 +232,7 @@ export const BlackjackGame = ({ balance, onBet, onWin }: BlackjackGameProps) => 
             <Button
               onClick={startGame}
               disabled={betAmount > balance}
-              className="w-full h-12 font-semibold bg-primary hover:bg-primary-glow"
+              className="w-full h-11 sm:h-12 font-semibold"
             >
               Deal (${betAmount})
             </Button>
@@ -240,18 +240,18 @@ export const BlackjackGame = ({ balance, onBet, onWin }: BlackjackGameProps) => 
         )}
 
         {gameState === 'playing' && (
-          <div className="flex gap-3">
-            <Button onClick={hit} className="flex-1 h-12 font-semibold">
+          <div className="flex gap-2 sm:gap-3">
+            <Button onClick={hit} className="flex-1 h-11 sm:h-12 font-semibold">
               Hit
             </Button>
-            <Button onClick={() => stand()} variant="secondary" className="flex-1 h-12 font-semibold">
+            <Button onClick={() => stand()} variant="secondary" className="flex-1 h-11 sm:h-12 font-semibold">
               Stand
             </Button>
           </div>
         )}
 
         {gameState === 'result' && (
-          <Button onClick={newRound} className="w-full h-12 font-semibold">
+          <Button onClick={newRound} className="w-full h-11 sm:h-12 font-semibold">
             New Hand
           </Button>
         )}
