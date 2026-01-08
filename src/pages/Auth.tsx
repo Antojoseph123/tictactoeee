@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Mail, Lock, User, ArrowLeft, Loader2, Gamepad2 } from 'lucide-react';
+import { Mail, Lock, User, ArrowLeft, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { soundManager } from '@/utils/sounds';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
@@ -22,7 +21,6 @@ const Auth = () => {
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
 
-  // Redirect if already logged in
   useEffect(() => {
     if (user) {
       navigate('/');
@@ -68,7 +66,6 @@ const Auth = () => {
     if (!validate()) return;
     
     setLoading(true);
-    soundManager.playClick();
 
     try {
       if (mode === 'login') {
@@ -80,7 +77,7 @@ const Auth = () => {
             toast.error(error.message);
           }
         } else {
-          toast.success('Welcome back!');
+          toast.success('Welcome back');
           navigate('/');
         }
       } else {
@@ -92,7 +89,7 @@ const Auth = () => {
             toast.error(error.message);
           }
         } else {
-          toast.success('Account created successfully!');
+          toast.success('Account created');
           navigate('/');
         }
       }
@@ -105,52 +102,25 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8">
-      {/* Background */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <motion.div
-          className="absolute top-1/4 -left-32 w-64 h-64 rounded-full bg-primary/10 blur-3xl"
-          animate={{ x: [0, 50, 0], y: [0, 30, 0], scale: [1, 1.1, 1] }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div
-          className="absolute bottom-1/4 -right-32 w-64 h-64 rounded-full bg-secondary/10 blur-3xl"
-          animate={{ x: [0, -50, 0], y: [0, -30, 0], scale: [1, 1.2, 1] }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-        />
-      </div>
-
       <motion.div
-        className="relative z-10 w-full max-w-md space-y-6"
+        className="w-full max-w-md space-y-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
         {/* Header */}
         <div className="text-center space-y-2">
-          <motion.div
-            className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-secondary/20 mb-4"
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ type: "spring", delay: 0.1 }}
-          >
-            <Gamepad2 className="w-8 h-8 text-primary" />
-          </motion.div>
-          <h1 className="text-3xl font-light text-foreground">
-            {mode === 'login' ? 'Welcome Back' : 'Join GameHub'}
+          <h1 className="text-3xl font-semibold text-foreground">
+            {mode === 'login' ? 'Welcome Back' : 'Create Account'}
           </h1>
           <p className="text-muted-foreground">
             {mode === 'login' 
-              ? 'Sign in to track your stats and compete' 
-              : 'Create an account to save your progress'}
+              ? 'Sign in to track your balance' 
+              : 'Sign up to save your progress'}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <motion.div
-            className="glass-panel rounded-2xl p-6 space-y-4"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.1 }}
-          >
+          <div className="game-card p-6 space-y-4">
             {mode === 'signup' && (
               <div>
                 <label className="block text-sm text-muted-foreground mb-2">Username</label>
@@ -161,7 +131,7 @@ const Auth = () => {
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     placeholder="Choose a username"
-                    className="w-full bg-card/10 border border-border/20 rounded-xl pl-10 pr-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
+                    className="w-full bg-muted border border-border rounded-lg pl-10 pr-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
                   />
                 </div>
                 {errors.username && <p className="text-destructive text-xs mt-1">{errors.username}</p>}
@@ -177,7 +147,7 @@ const Auth = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email"
-                  className="w-full bg-card/10 border border-border/20 rounded-xl pl-10 pr-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
+                  className="w-full bg-muted border border-border rounded-lg pl-10 pr-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
                 />
               </div>
               {errors.email && <p className="text-destructive text-xs mt-1">{errors.email}</p>}
@@ -192,17 +162,17 @@ const Auth = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
-                  className="w-full bg-card/10 border border-border/20 rounded-xl pl-10 pr-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
+                  className="w-full bg-muted border border-border rounded-lg pl-10 pr-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
                 />
               </div>
               {errors.password && <p className="text-destructive text-xs mt-1">{errors.password}</p>}
             </div>
-          </motion.div>
+          </div>
 
           <motion.button
             type="submit"
             disabled={loading}
-            className="w-full py-3 px-6 rounded-xl bg-primary text-primary-foreground font-medium disabled:opacity-50 transition-colors"
+            className="w-full py-3 px-6 rounded-lg bg-primary text-primary-foreground font-medium disabled:opacity-50 transition-colors"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
@@ -217,7 +187,7 @@ const Auth = () => {
         <p className="text-center text-muted-foreground">
           {mode === 'login' ? "Don't have an account? " : "Already have an account? "}
           <button
-            onClick={() => { soundManager.playClick(); setMode(mode === 'login' ? 'signup' : 'login'); setErrors({}); }}
+            onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setErrors({}); }}
             className="text-primary hover:underline"
           >
             {mode === 'login' ? 'Sign up' : 'Sign in'}
@@ -225,12 +195,12 @@ const Auth = () => {
         </p>
 
         <motion.button
-          onClick={() => { soundManager.playClick(); navigate('/'); }}
+          onClick={() => navigate('/')}
           className="flex items-center gap-2 mx-auto text-muted-foreground hover:text-foreground transition-colors"
           whileHover={{ x: -4 }}
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to Games
+          Back
         </motion.button>
       </motion.div>
     </div>

@@ -3,16 +3,12 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { ThemeProvider } from "@/contexts/ThemeContext";
 import { AuthProvider } from "@/contexts/AuthContext";
-import GameHub from "./pages/GameHub";
-import GamesLibrary from "./pages/GamesLibrary";
-import PlayGame from "./pages/PlayGame";
-import LeaderboardPage from "./pages/LeaderboardPage";
-import ProfilePage from "./pages/ProfilePage";
+import CasinoHome from "./pages/CasinoHome";
+import PlayCasino from "./pages/PlayCasino";
 import Auth from "./pages/Auth";
+import ProfilePage from "./pages/ProfilePage";
 import NotFound from "./pages/NotFound";
-import Casino from "./pages/Casino";
 
 // Admin pages
 import AdminLayout from "./pages/admin/AdminLayout";
@@ -26,38 +22,31 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <ThemeProvider>
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<GameHub />} />
-              <Route path="/games" element={<GamesLibrary />} />
-              <Route path="/play/:gameId" element={<PlayGame />} />
-              <Route path="/leaderboard" element={<LeaderboardPage />} />
-              <Route path="/profile" element={<ProfilePage />} />
-              <Route path="/casino" element={<Casino />} />
-              
-              <Route path="/auth" element={<Auth />} />
-              
-              {/* Admin routes */}
-              <Route path="/admin" element={<AdminLayout />}>
-                <Route index element={<AdminDashboard />} />
-                <Route path="users" element={<AdminUsers />} />
-                <Route path="games" element={<AdminGames />} />
-                <Route path="leaderboards" element={<AdminLeaderboards />} />
-                <Route path="settings" element={<AdminSettings />} />
-              </Route>
-              
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </AuthProvider>
-    </ThemeProvider>
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<CasinoHome />} />
+            <Route path="/play/:gameId" element={<PlayCasino />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/auth" element={<Auth />} />
+            
+            {/* Admin routes */}
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<AdminDashboard />} />
+              <Route path="users" element={<AdminUsers />} />
+              <Route path="games" element={<AdminGames />} />
+              <Route path="leaderboards" element={<AdminLeaderboards />} />
+              <Route path="settings" element={<AdminSettings />} />
+            </Route>
+            
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 
