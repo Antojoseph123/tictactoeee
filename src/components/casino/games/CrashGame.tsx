@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { BetControls } from '../BetControls';
-import { soundManager } from '@/utils/sounds';
 
 interface CrashGameProps {
   balance: number;
@@ -22,9 +21,8 @@ export const CrashGame = ({ balance, onBet, onWin }: CrashGameProps) => {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const generateCrashPoint = () => {
-    // House edge of ~3%
     const r = Math.random();
-    if (r < 0.03) return 1.0; // Instant crash 3%
+    if (r < 0.03) return 1.0;
     return Math.max(1.0, Math.floor((100 / (r * 97)) * 100) / 100);
   };
 
@@ -37,7 +35,6 @@ export const CrashGame = ({ balance, onBet, onWin }: CrashGameProps) => {
     setCashOutMultiplier(null);
     setMultiplier(1.0);
     setGameState('running');
-    soundManager.playClick();
 
     const crash = generateCrashPoint();
     setCrashPoint(crash);
@@ -65,7 +62,6 @@ export const CrashGame = ({ balance, onBet, onWin }: CrashGameProps) => {
     
     const winnings = betAmount * multiplier;
     onWin(winnings);
-    soundManager.playWin();
   }, [gameState, cashedOut, multiplier, betAmount, onWin]);
 
   const resetGame = () => {
@@ -83,8 +79,8 @@ export const CrashGame = ({ balance, onBet, onWin }: CrashGameProps) => {
   return (
     <div className="flex flex-col items-center gap-6 p-6">
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-foreground mb-2">📈 Crash</h2>
-        <p className="text-sm text-muted-foreground">Cash out before it crashes!</p>
+        <h2 className="text-2xl font-semibold text-foreground mb-2">Crash</h2>
+        <p className="text-sm text-muted-foreground">Cash out before it crashes</p>
       </div>
 
       {/* History */}
@@ -92,9 +88,7 @@ export const CrashGame = ({ balance, onBet, onWin }: CrashGameProps) => {
         {history.map((crash, i) => (
           <span
             key={i}
-            className={`px-2 py-1 text-xs rounded-full font-bold ${
-              crash < 2 ? 'bg-red-500/20 text-red-500' : 'bg-green-500/20 text-green-500'
-            }`}
+            className={`history-chip ${crash >= 2 ? 'win' : 'loss'}`}
           >
             {crash.toFixed(2)}x
           </span>
@@ -102,9 +96,9 @@ export const CrashGame = ({ balance, onBet, onWin }: CrashGameProps) => {
       </div>
 
       {/* Crash Display */}
-      <div className="relative w-full max-w-md h-48 bg-gradient-to-b from-background to-muted/30 rounded-2xl border border-border overflow-hidden">
+      <div className="relative w-full max-w-md h-48 bg-muted/20 rounded-xl border border-border overflow-hidden">
         <motion.div
-          className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-primary/20 to-transparent"
+          className="absolute bottom-0 left-0 right-0 bg-primary/10"
           animate={{
             height: gameState === 'crashed' ? '0%' : `${Math.min(multiplier * 10, 100)}%`
           }}
@@ -113,8 +107,8 @@ export const CrashGame = ({ balance, onBet, onWin }: CrashGameProps) => {
         <div className="absolute inset-0 flex items-center justify-center">
           <motion.span
             className={`text-6xl font-bold ${
-              gameState === 'crashed' ? 'text-red-500' : 
-              cashedOut ? 'text-green-500' : 
+              gameState === 'crashed' ? 'indicator-loss' : 
+              cashedOut ? 'indicator-win' : 
               'text-foreground'
             }`}
             animate={gameState === 'crashed' ? { scale: [1, 1.2, 1] } : {}}
@@ -127,9 +121,9 @@ export const CrashGame = ({ balance, onBet, onWin }: CrashGameProps) => {
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            className="absolute top-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-red-500 text-white font-bold rounded-full"
+            className="absolute top-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-destructive text-white font-semibold rounded-lg"
           >
-            CRASHED!
+            CRASHED
           </motion.div>
         )}
 
@@ -137,9 +131,9 @@ export const CrashGame = ({ balance, onBet, onWin }: CrashGameProps) => {
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            className="absolute top-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-green-500 text-white font-bold rounded-full"
+            className="absolute top-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-casino-win text-white font-semibold rounded-lg"
           >
-            Cashed out at {cashOutMultiplier.toFixed(2)}x! +${(betAmount * cashOutMultiplier).toFixed(2)}
+            +${(betAmount * cashOutMultiplier).toFixed(2)}
           </motion.div>
         )}
       </div>
@@ -156,7 +150,7 @@ export const CrashGame = ({ balance, onBet, onWin }: CrashGameProps) => {
             <Button
               onClick={startGame}
               disabled={betAmount > balance}
-              className="w-full h-12 text-lg font-bold bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
+              className="w-full h-12 font-semibold bg-primary hover:bg-primary-glow"
             >
               Start (${betAmount})
             </Button>
@@ -166,7 +160,7 @@ export const CrashGame = ({ balance, onBet, onWin }: CrashGameProps) => {
         {gameState === 'running' && !cashedOut && (
           <Button
             onClick={cashOut}
-            className="w-full h-16 text-xl font-bold bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600"
+            className="w-full h-16 text-xl font-bold bg-secondary hover:bg-secondary-glow"
           >
             Cash Out (${(betAmount * multiplier).toFixed(2)})
           </Button>
@@ -175,7 +169,7 @@ export const CrashGame = ({ balance, onBet, onWin }: CrashGameProps) => {
         {(gameState === 'crashed' || cashedOut) && (
           <Button
             onClick={resetGame}
-            className="w-full h-12 font-bold"
+            className="w-full h-12 font-semibold"
           >
             Play Again
           </Button>

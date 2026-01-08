@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { BetControls } from '../BetControls';
 import { Slider } from '@/components/ui/slider';
-import { soundManager } from '@/utils/sounds';
 
 interface DiceGameProps {
   balance: number;
@@ -30,9 +29,7 @@ export const DiceGame = ({ balance, onBet, onWin }: DiceGameProps) => {
     setRolling(true);
     setResult(null);
     setWon(null);
-    soundManager.playClick();
 
-    // Animate rolling
     const rollDuration = 1000;
     const intervals = 15;
     let count = 0;
@@ -55,7 +52,6 @@ export const DiceGame = ({ balance, onBet, onWin }: DiceGameProps) => {
 
         if (isWin) {
           onWin(betAmount * multiplier);
-          soundManager.playWin();
         }
 
         setRolling(false);
@@ -66,8 +62,8 @@ export const DiceGame = ({ balance, onBet, onWin }: DiceGameProps) => {
   return (
     <div className="flex flex-col items-center gap-6 p-6">
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-foreground mb-2">🎲 Dice</h2>
-        <p className="text-sm text-muted-foreground">Roll {rollOver ? 'over' : 'under'} {target.toFixed(2)} to win!</p>
+        <h2 className="text-2xl font-semibold text-foreground mb-2">Dice</h2>
+        <p className="text-sm text-muted-foreground">Roll {rollOver ? 'over' : 'under'} {target.toFixed(2)} to win</p>
       </div>
 
       {/* History */}
@@ -75,8 +71,8 @@ export const DiceGame = ({ balance, onBet, onWin }: DiceGameProps) => {
         {history.map((h, i) => (
           <span
             key={i}
-            className={`w-8 h-8 text-xs rounded-full font-bold flex items-center justify-center ${
-              h.won ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'
+            className={`w-8 h-8 text-xs rounded-full font-medium flex items-center justify-center ${
+              h.won ? 'bg-casino-win/20 indicator-win' : 'bg-destructive/20 indicator-loss'
             }`}
           >
             {h.result.toFixed(0)}
@@ -86,15 +82,15 @@ export const DiceGame = ({ balance, onBet, onWin }: DiceGameProps) => {
 
       {/* Result Display */}
       <div className="relative w-full max-w-md">
-        <div className="h-20 bg-muted rounded-xl flex items-center justify-center relative overflow-hidden">
+        <div className="h-20 bg-muted/30 rounded-xl flex items-center justify-center relative overflow-hidden border border-border">
           <div 
-            className={`absolute inset-y-0 ${rollOver ? 'right-0' : 'left-0'} bg-green-500/20`}
+            className={`absolute inset-y-0 ${rollOver ? 'right-0' : 'left-0'} bg-casino-win/20`}
             style={{ width: `${rollOver ? 100 - target : target}%` }}
           />
           <motion.span
             className={`text-4xl font-bold z-10 ${
               won === null ? 'text-foreground' :
-              won ? 'text-green-500' : 'text-red-500'
+              won ? 'indicator-win' : 'indicator-loss'
             }`}
             animate={rolling ? { scale: [1, 1.1, 1] } : {}}
             transition={{ repeat: rolling ? Infinity : 0, duration: 0.1 }}
@@ -105,11 +101,11 @@ export const DiceGame = ({ balance, onBet, onWin }: DiceGameProps) => {
 
         {/* Target Indicator */}
         <div 
-          className="absolute top-0 bottom-0 w-1 bg-yellow-500"
+          className="absolute top-0 bottom-0 w-0.5 bg-secondary"
           style={{ left: `${target}%` }}
         >
-          <div className="absolute -top-2 left-1/2 -translate-x-1/2 px-2 py-1 bg-yellow-500 text-yellow-900 text-xs font-bold rounded">
-            {target.toFixed(2)}
+          <div className="absolute -top-2 left-1/2 -translate-x-1/2 px-2 py-1 bg-secondary text-secondary-foreground text-xs font-medium rounded">
+            {target.toFixed(0)}
           </div>
         </div>
       </div>
@@ -150,11 +146,11 @@ export const DiceGame = ({ balance, onBet, onWin }: DiceGameProps) => {
         <div className="flex justify-between text-sm">
           <div>
             <span className="text-muted-foreground">Win Chance: </span>
-            <span className="font-bold text-foreground">{winChance.toFixed(2)}%</span>
+            <span className="font-medium text-foreground">{winChance.toFixed(2)}%</span>
           </div>
           <div>
             <span className="text-muted-foreground">Multiplier: </span>
-            <span className="font-bold text-green-500">{multiplier.toFixed(2)}x</span>
+            <span className="font-medium indicator-win">{multiplier.toFixed(2)}x</span>
           </div>
         </div>
       </div>
@@ -171,7 +167,7 @@ export const DiceGame = ({ balance, onBet, onWin }: DiceGameProps) => {
         <Button
           onClick={roll}
           disabled={rolling || betAmount > balance}
-          className="w-full h-12 text-lg font-bold bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600"
+          className="w-full h-12 font-semibold bg-primary hover:bg-primary-glow"
         >
           {rolling ? 'Rolling...' : `Roll (${multiplier.toFixed(2)}x)`}
         </Button>

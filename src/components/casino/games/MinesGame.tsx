@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { BetControls } from '../BetControls';
 import { Bomb, Gem } from 'lucide-react';
-import { soundManager } from '@/utils/sounds';
 
 interface MinesGameProps {
   balance: number;
@@ -22,7 +21,6 @@ export const MinesGame = ({ balance, onBet, onWin }: MinesGameProps) => {
   const [currentMultiplier, setCurrentMultiplier] = useState(1);
 
   const calculateMultiplier = (safe: number, mineCount: number): number => {
-    // House edge multiplier calculation
     let mult = 1;
     for (let i = 0; i < safe; i++) {
       mult *= (GRID_SIZE - mineCount - i) / (GRID_SIZE - i);
@@ -34,9 +32,6 @@ export const MinesGame = ({ balance, onBet, onWin }: MinesGameProps) => {
     const success = await onBet(betAmount);
     if (!success) return;
 
-    soundManager.playClick();
-
-    // Generate mine positions
     const minePositions: number[] = [];
     while (minePositions.length < mineCount) {
       const pos = Math.floor(Math.random() * GRID_SIZE);
@@ -54,8 +49,6 @@ export const MinesGame = ({ balance, onBet, onWin }: MinesGameProps) => {
   const revealTile = useCallback((index: number) => {
     if (gameState !== 'playing' || revealed.includes(index)) return;
 
-    soundManager.playClick();
-
     if (mines.includes(index)) {
       setRevealed([...revealed, index]);
       setGameState('lost');
@@ -68,11 +61,9 @@ export const MinesGame = ({ balance, onBet, onWin }: MinesGameProps) => {
     const newMult = calculateMultiplier(newRevealed.length, mineCount);
     setCurrentMultiplier(newMult);
 
-    // Check if all safe tiles revealed
     if (newRevealed.length === GRID_SIZE - mineCount) {
       setGameState('won');
       onWin(betAmount * newMult);
-      soundManager.playWin();
     }
   }, [gameState, revealed, mines, mineCount, betAmount, onWin]);
 
@@ -81,7 +72,6 @@ export const MinesGame = ({ balance, onBet, onWin }: MinesGameProps) => {
 
     const winnings = betAmount * currentMultiplier;
     onWin(winnings);
-    soundManager.playWin();
     setGameState('won');
   }, [gameState, revealed.length, betAmount, currentMultiplier, onWin]);
 
@@ -95,8 +85,8 @@ export const MinesGame = ({ balance, onBet, onWin }: MinesGameProps) => {
   return (
     <div className="flex flex-col items-center gap-6 p-6">
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-foreground mb-2">💎 Mines</h2>
-        <p className="text-sm text-muted-foreground">Reveal gems, avoid mines!</p>
+        <h2 className="text-2xl font-semibold text-foreground mb-2">Mines</h2>
+        <p className="text-sm text-muted-foreground">Reveal gems, avoid mines</p>
       </div>
 
       {/* Multiplier Display */}
@@ -107,7 +97,7 @@ export const MinesGame = ({ balance, onBet, onWin }: MinesGameProps) => {
           animate={{ scale: 1 }}
         >
           <p className="text-sm text-muted-foreground">Current Multiplier</p>
-          <p className="text-3xl font-bold text-green-500">{currentMultiplier.toFixed(2)}x</p>
+          <p className="text-3xl font-bold indicator-win">{currentMultiplier.toFixed(2)}x</p>
           <p className="text-sm text-muted-foreground">
             Potential: ${(betAmount * currentMultiplier).toFixed(2)}
           </p>
@@ -115,7 +105,7 @@ export const MinesGame = ({ balance, onBet, onWin }: MinesGameProps) => {
       )}
 
       {/* Game Grid */}
-      <div className="grid grid-cols-5 gap-2 p-4 bg-muted/30 rounded-xl">
+      <div className="grid grid-cols-5 gap-2 p-4 bg-muted/20 rounded-xl border border-border">
         {Array.from({ length: GRID_SIZE }).map((_, index) => {
           const isRevealed = revealed.includes(index);
           const isMine = mines.includes(index);
@@ -129,9 +119,9 @@ export const MinesGame = ({ balance, onBet, onWin }: MinesGameProps) => {
               disabled={gameState !== 'playing' || isRevealed}
               className={`w-12 h-12 rounded-lg flex items-center justify-center font-bold text-lg transition-all ${
                 showMine
-                  ? 'bg-red-500'
+                  ? 'bg-destructive'
                   : showGem
-                  ? 'bg-green-500'
+                  ? 'bg-casino-win'
                   : 'bg-muted hover:bg-muted/80'
               } ${gameState === 'playing' && !isRevealed ? 'cursor-pointer' : 'cursor-default'}`}
               whileHover={gameState === 'playing' && !isRevealed ? { scale: 1.1 } : {}}
@@ -189,7 +179,7 @@ export const MinesGame = ({ balance, onBet, onWin }: MinesGameProps) => {
             <Button
               onClick={startGame}
               disabled={betAmount > balance}
-              className="w-full h-12 text-lg font-bold bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600"
+              className="w-full h-12 font-semibold bg-primary hover:bg-primary-glow"
             >
               Start (${betAmount})
             </Button>
@@ -200,7 +190,7 @@ export const MinesGame = ({ balance, onBet, onWin }: MinesGameProps) => {
           <Button
             onClick={cashOut}
             disabled={revealed.length === 0}
-            className="w-full h-12 text-lg font-bold bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
+            className="w-full h-12 font-semibold bg-secondary hover:bg-secondary-glow"
           >
             Cash Out (${(betAmount * currentMultiplier).toFixed(2)})
           </Button>
@@ -208,12 +198,12 @@ export const MinesGame = ({ balance, onBet, onWin }: MinesGameProps) => {
 
         {(gameState === 'won' || gameState === 'lost') && (
           <div className="text-center space-y-4">
-            <p className={`text-xl font-bold ${gameState === 'won' ? 'text-green-500' : 'text-red-500'}`}>
+            <p className={`text-xl font-bold ${gameState === 'won' ? 'indicator-win' : 'indicator-loss'}`}>
               {gameState === 'won' 
                 ? `Won $${(betAmount * currentMultiplier).toFixed(2)}!` 
                 : 'Hit a mine!'}
             </p>
-            <Button onClick={resetGame} className="w-full h-12 font-bold">
+            <Button onClick={resetGame} className="w-full h-12 font-semibold">
               Play Again
             </Button>
           </div>
