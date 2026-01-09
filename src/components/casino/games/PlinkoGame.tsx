@@ -326,7 +326,14 @@ const PlinkoGame = ({ balance, onBet, onWin }: PlinkoGameProps) => {
     }
   }, [autoMode, betAmount, ballCount, balance, isDropping, onBet, setSafeTimeout, spawnBall]);
 
-  // Auto mode logic
+  // Auto mode logic - stopAutoMode must be declared first since startAutoMode references it
+  const stopAutoMode = useCallback(() => {
+    autoModeRef.current = false;
+    clearAllTimeouts();
+    setAutoMode(false);
+    if (activeBallsRef.current.size === 0) setIsDropping(false);
+  }, [clearAllTimeouts]);
+
   const startAutoMode = useCallback(async () => {
     if (!engineRef.current) return;
     if (autoModeRef.current) return;
@@ -340,15 +347,30 @@ const PlinkoGame = ({ balance, onBet, onWin }: PlinkoGameProps) => {
 
     const runAutoDrop = async (dropped: number) => {
       if (!autoModeRef.current) return;
-      if (dropped >= autoBalls) return stopAutoMode();
+      if (dropped >= autoBalls) {
+        stopAutoMode();
+        return;
+      }
 
       // Stop conditions
-      if (autoProfitRef.current >= stopOnProfit) return stopAutoMode();
-      if (autoProfitRef.current <= -stopOnLoss) return stopAutoMode();
-      if (betAmount > balance) return stopAutoMode();
+      if (autoProfitRef.current >= stopOnProfit) {
+        stopAutoMode();
+        return;
+      }
+      if (autoProfitRef.current <= -stopOnLoss) {
+        stopAutoMode();
+        return;
+      }
+      if (betAmount > balance) {
+        stopAutoMode();
+        return;
+      }
 
       const success = await onBet(betAmount);
-      if (!success) return stopAutoMode();
+      if (!success) {
+        stopAutoMode();
+        return;
+      }
 
       setIsDropping(true);
       spawnBall(betAmount);
@@ -361,13 +383,6 @@ const PlinkoGame = ({ balance, onBet, onWin }: PlinkoGameProps) => {
 
     runAutoDrop(0);
   }, [autoBalls, betAmount, balance, clearAllTimeouts, onBet, setSafeTimeout, spawnBall, stopOnLoss, stopOnProfit, stopAutoMode]);
-
-  const stopAutoMode = useCallback(() => {
-    autoModeRef.current = false;
-    clearAllTimeouts();
-    setAutoMode(false);
-    if (activeBallsRef.current.size === 0) setIsDropping(false);
-  }, [clearAllTimeouts]);
 
   const onAutoCheckedChange = useCallback(
     (checked: boolean) => {
