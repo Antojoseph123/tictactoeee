@@ -70,8 +70,8 @@ const PlayCasino = () => {
   return (
     <div className="min-h-screen">
       <CasinoNav />
-      
-      <main className="pt-20 px-6 pb-12">
+
+      <main className="pt-20 px-4 sm:px-6 pb-12">
         {/* Back + Title */}
         <div className="max-w-4xl mx-auto py-6">
           <button

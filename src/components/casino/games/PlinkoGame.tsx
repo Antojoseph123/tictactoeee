@@ -48,6 +48,21 @@ const PlinkoGame = ({ balance, onBet, onWin }: PlinkoGameProps) => {
   const activeBallsRef = useRef<Map<number, number>>(new Map());
   const sessionProfitRef = useRef(0);
   const riskLevelRef = useRef<RiskLevel>(riskLevel);
+  const timeoutsRef = useRef<number[]>([]);
+
+  const setSafeTimeout = useCallback((fn: () => void, ms: number) => {
+    const id = window.setTimeout(() => {
+      timeoutsRef.current = timeoutsRef.current.filter((t) => t !== id);
+      fn();
+    }, ms);
+    timeoutsRef.current.push(id);
+    return id;
+  }, []);
+
+  const clearAllTimeouts = useCallback(() => {
+    for (const id of timeoutsRef.current) window.clearTimeout(id);
+    timeoutsRef.current = [];
+  }, []);
 
   useEffect(() => {
     riskLevelRef.current = riskLevel;
@@ -58,7 +73,7 @@ const PlinkoGame = ({ balance, onBet, onWin }: PlinkoGameProps) => {
     const updateSize = () => {
       if (!containerRef.current) return;
       const containerWidth = containerRef.current.offsetWidth;
-      const maxWidth = Math.min(containerWidth - 16, 400);
+      const maxWidth = Math.min(containerWidth, 420);
       const height = Math.round(maxWidth * 1.25);
       setCanvasSize({ width: maxWidth, height });
     };
@@ -97,9 +112,17 @@ const PlinkoGame = ({ balance, onBet, onWin }: PlinkoGameProps) => {
     const runner = Matter.Runner.create();
     runnerRef.current = runner;
 
-    // Peg settings - vary density by risk
-    const pegRadius = riskLevelRef.current === 'high' ? 4 : riskLevelRef.current === 'low' ? 6 : 5;
-    const pegSpacing = riskLevelRef.current === 'high' ? 26 : riskLevelRef.current === 'low' ? 30 : 28;
+    // Peg layout (responsive): compute spacing so the widest row always fits.
+    const maxPegsInRow = ROWS + 2;
+    const horizontalPadding = 28;
+    const maxSpacing = (width - horizontalPadding * 2) / (maxPegsInRow - 1);
+
+    const baseSpacing = riskLevelRef.current === 'high' ? 26 : riskLevelRef.current === 'low' ? 30 : 28;
+    const pegSpacing = Math.max(16, Math.min(baseSpacing, maxSpacing));
+
+    const basePegRadius = pegSpacing / 6;
+    const pegRadius = Math.max(3, Math.min(7, riskLevelRef.current === 'high' ? basePegRadius * 0.9 : riskLevelRef.current === 'low' ? basePegRadius * 1.1 : basePegRadius));
+
     const startY = 40;
     const endY = height - 60;
     const rowSpacing = (endY - startY) / ROWS;
@@ -164,7 +187,7 @@ const PlinkoGame = ({ balance, onBet, onWin }: PlinkoGameProps) => {
       if (ballBet === undefined) return;
 
       activeBallsRef.current.delete(ballId);
-      
+
       const currentMults = MULTIPLIERS[riskLevelRef.current];
       const bWidth = width / currentMults.length;
 
@@ -178,12 +201,11 @@ const PlinkoGame = ({ balance, onBet, onWin }: PlinkoGameProps) => {
       setSessionProfit(sessionProfitRef.current);
       onWin(winAmount);
 
-      setTimeout(() => {
-        Matter.Composite.remove(engine.world, ball);
+      setSafeTimeout(() => {
+        if (!engineRef.current) return;
+        Matter.Composite.remove(engineRef.current.world, ball);
         setActiveBallCount(activeBallsRef.current.size);
-        if (activeBallsRef.current.size === 0) {
-          setIsDropping(false);
-        }
+        if (activeBallsRef.current.size === 0) setIsDropping(false);
       }, 200);
     };
 
@@ -214,6 +236,8 @@ const PlinkoGame = ({ balance, onBet, onWin }: PlinkoGameProps) => {
       Matter.Events.off(engine, 'collisionStart', onCollisionStart);
       Matter.Events.off(engine, 'afterUpdate', onAfterUpdate);
 
+      clearAllTimeouts();
+
       try {
         Matter.Render.stop(render);
         Matter.Runner.stop(runner);
@@ -226,6 +250,8 @@ const PlinkoGame = ({ balance, onBet, onWin }: PlinkoGameProps) => {
         renderRef.current = null;
         runnerRef.current = null;
         activeBallsRef.current.clear();
+        setActiveBallCount(0);
+        setIsDropping(false);
       }
     };
   }, [onWin, canvasSize, riskLevel]);
@@ -239,8 +265,9 @@ const PlinkoGame = ({ balance, onBet, onWin }: PlinkoGameProps) => {
 
     const { width } = canvasSize;
     const currentMults = MULTIPLIERS[riskLevelRef.current];
-    const randomOffset = (Math.random() - 0.5) * 30;
-    const ballRadius = Math.max(6, width / 50);
+    const randomOffset = (Math.random() - 0.5) * Math.min(30, width * 0.08);
+    const ballRadius = Math.max(5, Math.round(width / 55));
+
     const ball = Matter.Bodies.circle(width / 2 + randomOffset, 10, ballRadius, {
       restitution: 0.6,
       friction: 0.1,
@@ -253,38 +280,37 @@ const PlinkoGame = ({ balance, onBet, onWin }: PlinkoGameProps) => {
     Matter.Composite.add(engineRef.current.world, ball);
 
     // Safety timeout
-    setTimeout(() => {
-      if (activeBallsRef.current.has(ballId) && engineRef.current) {
-        activeBallsRef.current.delete(ballId);
+    setSafeTimeout(() => {
+      if (!activeBallsRef.current.has(ballId) || !engineRef.current) return;
 
-        const bucketWidth = canvasSize.width / currentMults.length;
-        const bucketIndex = Math.max(0, Math.min(currentMults.length - 1, Math.floor(ball.position.x / bucketWidth)));
-        const multiplier = currentMults[bucketIndex] || 1;
-        const winAmount = betAmt * multiplier;
-        const profit = winAmount - betAmt;
+      activeBallsRef.current.delete(ballId);
 
-        sessionProfitRef.current += profit;
-        autoProfitRef.current += profit;
-        setSessionProfit(sessionProfitRef.current);
-        onWin(winAmount);
+      const bucketWidth = canvasSize.width / currentMults.length;
+      const bucketIndex = Math.max(0, Math.min(currentMults.length - 1, Math.floor(ball.position.x / bucketWidth)));
+      const multiplier = currentMults[bucketIndex] || 1;
+      const winAmount = betAmt * multiplier;
+      const profit = winAmount - betAmt;
 
-        Matter.Composite.remove(engineRef.current.world, ball);
-        setActiveBallCount(activeBallsRef.current.size);
+      sessionProfitRef.current += profit;
+      autoProfitRef.current += profit;
+      setSessionProfit(sessionProfitRef.current);
+      onWin(winAmount);
 
-        if (activeBallsRef.current.size === 0) {
-          setIsDropping(false);
-        }
-      }
+      Matter.Composite.remove(engineRef.current.world, ball);
+      setActiveBallCount(activeBallsRef.current.size);
+
+      if (activeBallsRef.current.size === 0) setIsDropping(false);
     }, 7000);
-  }, [onWin, canvasSize]);
+  }, [onWin, canvasSize, setSafeTimeout]);
 
   const dropBalls = useCallback(async () => {
     if (!engineRef.current) return;
+    if (isDropping || autoMode) return;
 
     const totalCost = betAmount * ballCount;
     if (totalCost > balance) return;
 
-    // Reset session profit for new drop
+    // Reset session profit for this manual run
     sessionProfitRef.current = 0;
     setSessionProfit(0);
     setIsDropping(true);
@@ -294,78 +320,62 @@ const PlinkoGame = ({ balance, onBet, onWin }: PlinkoGameProps) => {
       const success = await onBet(betAmount);
       if (!success) break;
 
-      setTimeout(() => {
+      setSafeTimeout(() => {
         spawnBall(betAmount);
       }, i * 150);
     }
-  }, [betAmount, ballCount, balance, onBet, spawnBall]);
+  }, [autoMode, betAmount, ballCount, balance, isDropping, onBet, setSafeTimeout, spawnBall]);
 
   // Auto mode logic
   const startAutoMode = useCallback(async () => {
     if (!engineRef.current) return;
+    if (autoModeRef.current) return;
+
+    clearAllTimeouts();
 
     autoModeRef.current = true;
     autoProfitRef.current = 0;
     setAutoDropped(0);
+    setAutoMode(true);
 
     const runAutoDrop = async (dropped: number) => {
       if (!autoModeRef.current) return;
-      if (dropped >= autoBalls) {
-        autoModeRef.current = false;
-        setAutoMode(false);
-        return;
-      }
+      if (dropped >= autoBalls) return stopAutoMode();
 
-      // Check stop conditions
-      if (autoProfitRef.current >= stopOnProfit) {
-        autoModeRef.current = false;
-        setAutoMode(false);
-        return;
-      }
-      if (autoProfitRef.current <= -stopOnLoss) {
-        autoModeRef.current = false;
-        setAutoMode(false);
-        return;
-      }
-
-      if (betAmount > balance) {
-        autoModeRef.current = false;
-        setAutoMode(false);
-        return;
-      }
+      // Stop conditions
+      if (autoProfitRef.current >= stopOnProfit) return stopAutoMode();
+      if (autoProfitRef.current <= -stopOnLoss) return stopAutoMode();
+      if (betAmount > balance) return stopAutoMode();
 
       const success = await onBet(betAmount);
-      if (!success) {
-        autoModeRef.current = false;
-        setAutoMode(false);
-        return;
-      }
+      if (!success) return stopAutoMode();
 
       setIsDropping(true);
       spawnBall(betAmount);
       setAutoDropped(dropped + 1);
 
-      setTimeout(() => {
+      setSafeTimeout(() => {
         runAutoDrop(dropped + 1);
       }, 800);
     };
 
     runAutoDrop(0);
-  }, [autoBalls, betAmount, balance, onBet, spawnBall, stopOnProfit, stopOnLoss]);
+  }, [autoBalls, betAmount, balance, clearAllTimeouts, onBet, setSafeTimeout, spawnBall, stopOnLoss, stopOnProfit, stopAutoMode]);
 
   const stopAutoMode = useCallback(() => {
     autoModeRef.current = false;
+    clearAllTimeouts();
     setAutoMode(false);
-  }, []);
+    if (activeBallsRef.current.size === 0) setIsDropping(false);
+  }, [clearAllTimeouts]);
 
-  const toggleAutoMode = useCallback(() => {
-    if (autoMode) {
-      stopAutoMode();
-    } else {
-      setAutoMode(true);
-      startAutoMode();
-    }
-  }, [autoMode, startAutoMode, stopAutoMode]);
+  const onAutoCheckedChange = useCallback(
+    (checked: boolean) => {
+      if (checked) startAutoMode();
+      else stopAutoMode();
+    },
+    [startAutoMode, stopAutoMode],
+  );
 
   const totalCost = betAmount * ballCount;
   const currentMultipliers = MULTIPLIERS[riskLevel];
@@ -379,8 +389,8 @@ const PlinkoGame = ({ balance, onBet, onWin }: PlinkoGameProps) => {
 
       {/* Plinko Board */}
       <div ref={containerRef} className="relative bg-muted/20 rounded-xl overflow-hidden w-full max-w-md border border-border">
-        <canvas ref={canvasRef} width={canvasSize.width} height={canvasSize.height} className="block mx-auto" />
-        
+        <canvas ref={canvasRef} width={canvasSize.width} height={canvasSize.height} className="block mx-auto w-full h-auto" />
+
         {/* Active balls counter */}
         {activeBallCount > 0 && (
           <div className="absolute top-3 right-3 px-2 py-1 bg-surface-elevated rounded text-xs font-medium">
@@ -394,14 +404,14 @@ const PlinkoGame = ({ balance, onBet, onWin }: PlinkoGameProps) => {
             Auto: {autoDropped}/{autoBalls}
           </div>
         )}
-        
+
         {/* Multiplier labels overlay */}
         <div className="absolute bottom-0 left-0 right-0 flex">
           {currentMultipliers.map((mult, i) => (
             <div
               key={i}
-              className={`flex-1 py-2 text-center text-xs font-bold ${
-                mult >= 3 ? 'text-primary' : mult >= 1 ? 'text-text' : 'text-text-dim'
+              className={`flex-1 py-1.5 text-center text-[10px] sm:text-xs font-bold ${
+                mult >= 3 ? 'text-primary' : mult >= 1 ? 'text-foreground' : 'text-muted-foreground'
               }`}
             >
               {mult}x
@@ -429,45 +439,41 @@ const PlinkoGame = ({ balance, onBet, onWin }: PlinkoGameProps) => {
         {/* Risk level selector */}
         <div className="space-y-2">
           <label className="text-xs text-muted-foreground uppercase tracking-wide">Risk</label>
-          <div className="flex gap-2">
-            {(['low', 'medium', 'high'] as RiskLevel[]).map((level) => (
-              <button
-                key={level}
-                onClick={() => setRiskLevel(level)}
-                disabled={isDropping || autoMode}
-                className={`flex-1 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors capitalize ${
-                  riskLevel === level
-                    ? level === 'high' 
-                      ? 'bg-destructive text-destructive-foreground'
-                      : level === 'low'
-                        ? 'bg-green-600 text-white'
-                        : 'bg-primary text-primary-foreground'
-                    : 'bg-muted text-muted-foreground hover:text-foreground'
-                } disabled:opacity-50`}
-              >
-                {level}
-              </button>
-            ))}
+          <div className="grid grid-cols-3 gap-2">
+            {(['low', 'medium', 'high'] as RiskLevel[]).map((level) => {
+              const selected = riskLevel === level;
+              const variant = selected ? (level === 'high' ? 'destructive' : 'default') : 'secondary';
+              return (
+                <Button
+                  key={level}
+                  onClick={() => setRiskLevel(level)}
+                  disabled={isDropping || autoMode}
+                  variant={variant}
+                  size="sm"
+                  className="h-10 capitalize"
+                >
+                  {level}
+                </Button>
+              );
+            })}
           </div>
         </div>
 
         {/* Ball count selector */}
         <div className="space-y-2">
           <label className="text-xs text-muted-foreground uppercase tracking-wide">Balls</label>
-          <div className="flex gap-2">
+          <div className="grid grid-cols-4 gap-2">
             {BALL_COUNTS.map((count) => (
-              <button
+              <Button
                 key={count}
                 onClick={() => setBallCount(count)}
                 disabled={isDropping || autoMode}
-                className={`flex-1 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
-                  ballCount === count
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted text-muted-foreground hover:text-foreground'
-                } disabled:opacity-50`}
+                variant={ballCount === count ? 'default' : 'secondary'}
+                size="sm"
+                className="h-10"
               >
                 {count}x
-              </button>
+              </Button>
             ))}
           </div>
         </div>
@@ -476,13 +482,9 @@ const PlinkoGame = ({ balance, onBet, onWin }: PlinkoGameProps) => {
         <div className="space-y-3 p-3 bg-muted/30 rounded-lg border border-border">
           <div className="flex items-center justify-between">
             <label className="text-xs text-muted-foreground uppercase tracking-wide">Auto Mode</label>
-            <Switch
-              checked={autoMode}
-              onCheckedChange={toggleAutoMode}
-              disabled={isDropping && !autoMode}
-            />
+            <Switch checked={autoMode} onCheckedChange={onAutoCheckedChange} disabled={isDropping && !autoMode} />
           </div>
-          
+
           <div className="grid grid-cols-3 gap-2">
             <div className="space-y-1">
               <label className="text-xs text-muted-foreground">Balls</label>
@@ -491,27 +493,27 @@ const PlinkoGame = ({ balance, onBet, onWin }: PlinkoGameProps) => {
                 value={autoBalls}
                 onChange={(e) => setAutoBalls(Math.max(1, parseInt(e.target.value) || 1))}
                 disabled={autoMode}
-                className="h-8 text-sm"
+                className="h-9 text-sm"
               />
             </div>
             <div className="space-y-1">
-              <label className="text-xs text-muted-foreground text-green-400">Stop +$</label>
+              <label className="text-xs text-muted-foreground">Stop +$</label>
               <Input
                 type="number"
                 value={stopOnProfit}
                 onChange={(e) => setStopOnProfit(Math.max(0, parseFloat(e.target.value) || 0))}
                 disabled={autoMode}
-                className="h-8 text-sm"
+                className="h-9 text-sm"
               />
             </div>
             <div className="space-y-1">
-              <label className="text-xs text-muted-foreground text-red-400">Stop -$</label>
+              <label className="text-xs text-muted-foreground">Stop -$</label>
               <Input
                 type="number"
                 value={stopOnLoss}
                 onChange={(e) => setStopOnLoss(Math.max(0, parseFloat(e.target.value) || 0))}
                 disabled={autoMode}
-                className="h-8 text-sm"
+                className="h-9 text-sm"
               />
             </div>
           </div>
@@ -523,12 +525,11 @@ const PlinkoGame = ({ balance, onBet, onWin }: PlinkoGameProps) => {
           variant={autoMode ? 'destructive' : 'default'}
           className="w-full h-11 sm:h-12 font-semibold"
         >
-          {autoMode 
+          {autoMode
             ? 'Stop Auto'
-            : isDropping 
-              ? `Dropping... (${activeBallCount})` 
-              : `Drop ${ballCount} Ball${ballCount > 1 ? 's' : ''} ($${totalCost.toFixed(2)})`
-          }
+            : isDropping
+              ? `Dropping... (${activeBallCount})`
+              : `Drop ${ballCount} Ball${ballCount > 1 ? 's' : ''} ($${totalCost.toFixed(2)})`}
         </Button>
       </div>
     </div>
