@@ -283,6 +283,13 @@ const CasinoHome = () => {
               </table>
             </div>
           </div>
+
+          {/* Footer */}
+          <footer className="mt-12 py-6 border-t border-border text-center">
+            <p className="text-sm text-text-dim">
+              Made with ❤️ by <span className="text-primary font-medium">Albin Antony</span>
+            </p>
+          </footer>
         </main>
       </div>
     </div>
