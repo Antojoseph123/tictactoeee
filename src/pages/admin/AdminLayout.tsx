@@ -39,7 +39,31 @@ const AdminLayout = () => {
   }
 
   if (!isModerator) {
-    return null;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-6">
+        <div className="max-w-md w-full rounded-xl border border-border bg-card p-6">
+          <h1 className="text-xl font-semibold text-foreground">Admin access required</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Youre signed in, but your account doesnt have admin/moderator access.
+          </p>
+
+          <div className="mt-4 space-y-2 text-sm">
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-muted-foreground">User ID</span>
+              <span className="font-mono text-foreground truncate">{user?.id ?? '—'}</span>
+            </div>
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-muted-foreground">Role (from backend)</span>
+              <span className="font-mono text-foreground">{role}</span>
+            </div>
+          </div>
+
+          <p className="mt-4 text-xs text-muted-foreground">
+            If this looks wrong, log out and back in (role changes can take effect after a fresh session).
+          </p>
+        </div>
+      </div>
+    );
   }
 
   const navItems = [
