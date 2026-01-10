@@ -24,11 +24,11 @@ const AdminLayout = () => {
     if (!authLoading && !roleLoading) {
       if (!user) {
         navigate('/auth');
-      } else if (!isModerator) {
-        navigate('/');
       }
+      // If the user is signed in but not a moderator/admin, we render an access denied message
+      // instead of redirecting away (helps debugging + clearer UX).
     }
-  }, [user, role, authLoading, roleLoading, isModerator, navigate]);
+  }, [user, authLoading, roleLoading, navigate]);
 
   if (authLoading || roleLoading) {
     return (
