@@ -29,7 +29,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Search, Shield, Ban, Edit, Loader2 } from 'lucide-react';
+import { Search, Ban, Edit, Loader2, Users } from 'lucide-react';
 
 interface UserWithRole {
   id: string;
@@ -65,7 +65,6 @@ const AdminUsers = () => {
 
       if (error) throw error;
 
-      // Fetch roles for all users
       const usersWithRoles = await Promise.all(
         (profiles || []).map(async (profile) => {
           const { data: roleData } = await supabase
@@ -106,7 +105,6 @@ const AdminUsers = () => {
     setSaving(true);
 
     try {
-      // Update username
       if (newUsername !== selectedUser.username) {
         const { error: profileError } = await supabase
           .from('profiles')
@@ -116,7 +114,6 @@ const AdminUsers = () => {
         if (profileError) throw profileError;
       }
 
-      // Update role
       if (newRole !== selectedUser.role) {
         const { error: deleteError } = await supabase
           .from('user_roles')
@@ -169,26 +166,32 @@ const AdminUsers = () => {
   const getRoleBadgeColor = (role: AppRole) => {
     switch (role) {
       case 'admin':
-        return 'bg-red-500/20 text-red-500';
+        return 'bg-red-500/20 text-red-400 border-0';
       case 'moderator':
-        return 'bg-blue-500/20 text-blue-500';
+        return 'bg-blue-500/20 text-blue-400 border-0';
       default:
-        return 'bg-muted text-muted-foreground';
+        return 'bg-muted text-muted-foreground border-0';
     }
   };
 
   return (
-    <div className="p-6">
-      <h1 className="text-3xl font-bold mb-6">User Management</h1>
+    <div className="p-4 lg:p-6 space-y-4">
+      <div>
+        <h1 className="text-xl lg:text-2xl font-bold flex items-center gap-2">
+          <Users className="w-5 h-5 lg:w-6 lg:h-6" />
+          Player Management
+        </h1>
+        <p className="text-muted-foreground text-sm">Manage players and roles</p>
+      </div>
 
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>All Users</CardTitle>
-            <div className="relative w-64">
+      <Card className="border-border/50">
+        <CardHeader className="pb-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <CardTitle className="text-base">All Players</CardTitle>
+            <div className="relative w-full sm:w-64">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
-                placeholder="Search users..."
+                placeholder="Search players..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-9"
@@ -202,63 +205,69 @@ const AdminUsers = () => {
               <Loader2 className="w-6 h-6 animate-spin" />
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Username</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Games</TableHead>
-                  <TableHead>W/L/D</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredUsers.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell className="font-medium">{user.username}</TableCell>
-                    <TableCell>
-                      <Badge className={getRoleBadgeColor(user.role || 'user')}>
-                        {user.role || 'user'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{user.games_played}</TableCell>
-                    <TableCell>
-                      {user.wins}/{user.losses}/{user.draws}
-                    </TableCell>
-                    <TableCell>
-                      {user.is_banned ? (
-                        <Badge variant="destructive">Banned</Badge>
-                      ) : (
-                        <Badge variant="secondary">Active</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        {isAdmin && (
-                          <>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleEditUser(user)}
-                            >
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant={user.is_banned ? 'secondary' : 'destructive'}
-                              onClick={() => handleToggleBan(user)}
-                            >
-                              <Ban className="w-4 h-4" />
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                    </TableCell>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Username</TableHead>
+                    <TableHead>Role</TableHead>
+                    <TableHead className="hidden sm:table-cell">Games</TableHead>
+                    <TableHead className="hidden md:table-cell">W/L/D</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {filteredUsers.map((user) => (
+                    <TableRow key={user.id}>
+                      <TableCell className="font-medium text-sm">{user.username}</TableCell>
+                      <TableCell>
+                        <Badge className={getRoleBadgeColor(user.role || 'user')}>
+                          {user.role || 'user'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="hidden sm:table-cell text-sm">{user.games_played}</TableCell>
+                      <TableCell className="hidden md:table-cell text-sm">
+                        <span className="text-green-400">{user.wins}</span>/
+                        <span className="text-red-400">{user.losses}</span>/
+                        <span className="text-muted-foreground">{user.draws}</span>
+                      </TableCell>
+                      <TableCell>
+                        {user.is_banned ? (
+                          <Badge variant="destructive" className="text-xs">Banned</Badge>
+                        ) : (
+                          <Badge variant="secondary" className="text-xs bg-green-500/20 text-green-400 border-0">Active</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-1">
+                          {isAdmin && (
+                            <>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleEditUser(user)}
+                                className="h-8 w-8 p-0"
+                              >
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleToggleBan(user)}
+                                className={`h-8 w-8 p-0 ${user.is_banned ? 'text-green-400' : 'text-destructive'}`}
+                              >
+                                <Ban className="w-4 h-4" />
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>
@@ -266,9 +275,9 @@ const AdminUsers = () => {
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit User</DialogTitle>
+            <DialogTitle>Edit Player</DialogTitle>
             <DialogDescription>
-              Update user details and permissions.
+              Update player details and permissions.
             </DialogDescription>
           </DialogHeader>
 
@@ -302,7 +311,7 @@ const AdminUsers = () => {
             </Button>
             <Button onClick={handleSaveUser} disabled={saving}>
               {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-              Save Changes
+              Save
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -6,29 +6,33 @@ import {
   Shield, 
   Users, 
   Gamepad2, 
-  Trophy, 
   Settings, 
   BarChart3,
   Home,
   Loader2,
-  History
+  History,
+  Menu,
+  X
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
 
 const AdminLayout = () => {
   const { user, loading: authLoading } = useAuth();
-  const { role, loading: roleLoading, isModerator } = useUserRole();
+  const { role, isLoading: roleLoading, isModerator } = useUserRole();
   const navigate = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !roleLoading) {
       if (!user) {
         navigate('/auth');
+      } else if (!isModerator) {
+        navigate('/');
       }
-      // If the user is signed in but not a moderator/admin, we render an access denied message
-      // instead of redirecting away (helps debugging + clearer UX).
     }
-  }, [user, authLoading, roleLoading, navigate]);
+  }, [user, authLoading, roleLoading, isModerator, navigate]);
 
   if (authLoading || roleLoading) {
     return (
@@ -39,90 +43,106 @@ const AdminLayout = () => {
   }
 
   if (!isModerator) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-6">
-        <div className="max-w-md w-full rounded-xl border border-border bg-card p-6">
-          <h1 className="text-xl font-semibold text-foreground">Admin access required</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Youre signed in, but your account doesnt have admin/moderator access.
-          </p>
-
-          <div className="mt-4 space-y-2 text-sm">
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-muted-foreground">User ID</span>
-              <span className="font-mono text-foreground truncate">{user?.id ?? '—'}</span>
-            </div>
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-muted-foreground">Role (from backend)</span>
-              <span className="font-mono text-foreground">{role}</span>
-            </div>
-          </div>
-
-          <p className="mt-4 text-xs text-muted-foreground">
-            If this looks wrong, log out and back in (role changes can take effect after a fresh session).
-          </p>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   const navItems = [
     { to: '/admin', icon: BarChart3, label: 'Dashboard', end: true },
-    { to: '/admin/users', icon: Users, label: 'Users' },
-    { to: '/admin/games', icon: Gamepad2, label: 'Games' },
-    { to: '/admin/leaderboards', icon: Trophy, label: 'Leaderboards' },
+    { to: '/admin/users', icon: Users, label: 'Players' },
     { to: '/admin/history', icon: History, label: 'Bet History' },
+    { to: '/admin/games', icon: Gamepad2, label: 'Game Config' },
     { to: '/admin/settings', icon: Settings, label: 'Settings' },
   ];
 
+  const SidebarContent = () => (
+    <>
+      <div className="p-4 border-b border-border">
+        <div className="flex items-center gap-2">
+          <Shield className="w-6 h-6 text-primary" />
+          <span className="font-bold text-lg">Admin</span>
+        </div>
+        <span className="text-xs text-muted-foreground capitalize mt-1 block">
+          {role}
+        </span>
+      </div>
+
+      <nav className="flex-1 p-3 space-y-1">
+        {navItems.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            end={item.end}
+            onClick={() => setSidebarOpen(false)}
+            className={({ isActive }) =>
+              cn(
+                'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm',
+                isActive
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+              )
+            }
+          >
+            <item.icon className="w-4 h-4" />
+            {item.label}
+          </NavLink>
+        ))}
+      </nav>
+
+      <div className="p-3 border-t border-border">
+        <NavLink
+          to="/"
+          onClick={() => setSidebarOpen(false)}
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors text-sm"
+        >
+          <Home className="w-4 h-4" />
+          Back to Casino
+        </NavLink>
+      </div>
+    </>
+  );
+
   return (
     <div className="min-h-screen flex bg-background">
-      {/* Sidebar */}
-      <aside className="w-64 bg-card border-r border-border flex flex-col">
-        <div className="p-4 border-b border-border">
-          <div className="flex items-center gap-2">
-            <Shield className="w-6 h-6 text-primary" />
-            <span className="font-bold text-lg">Admin Panel</span>
-          </div>
-          <span className="text-xs text-muted-foreground capitalize mt-1 block">
-            Role: {role}
-          </span>
+      {/* Mobile Header */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 h-14 bg-card border-b border-border flex items-center justify-between px-4">
+        <div className="flex items-center gap-2">
+          <Shield className="w-5 h-5 text-primary" />
+          <span className="font-bold">Admin</span>
         </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+        >
+          {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        </Button>
+      </div>
 
-        <nav className="flex-1 p-4 space-y-1">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.end}
-              className={({ isActive }) =>
-                cn(
-                  'flex items-center gap-3 px-3 py-2 rounded-lg transition-colors',
-                  isActive
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                )
-              }
-            >
-              <item.icon className="w-5 h-5" />
-              {item.label}
-            </NavLink>
-          ))}
-        </nav>
+      {/* Mobile Sidebar Overlay */}
+      {sidebarOpen && (
+        <div
+          className="lg:hidden fixed inset-0 z-40 bg-black/50"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
 
-        <div className="p-4 border-t border-border">
-          <NavLink
-            to="/"
-            className="flex items-center gap-3 px-3 py-2 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-          >
-            <Home className="w-5 h-5" />
-            Back to App
-          </NavLink>
-        </div>
+      {/* Mobile Sidebar */}
+      <aside
+        className={cn(
+          'lg:hidden fixed top-14 left-0 bottom-0 z-40 w-64 bg-card border-r border-border flex flex-col transition-transform duration-300',
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        )}
+      >
+        <SidebarContent />
+      </aside>
+
+      {/* Desktop Sidebar */}
+      <aside className="hidden lg:flex w-56 bg-card border-r border-border flex-col flex-shrink-0">
+        <SidebarContent />
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 overflow-auto lg:pt-0 pt-14">
         <Outlet />
       </main>
     </div>
