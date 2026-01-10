@@ -11,24 +11,32 @@ export const useUserRole = () => {
 
   useEffect(() => {
     const fetchRole = async () => {
+      console.log('[useUserRole] Starting fetchRole, user:', user?.id);
+      
       if (!user) {
+        console.log('[useUserRole] No user, setting role to user');
         setRole('user');
         setIsLoading(false);
         return;
       }
 
       try {
+        console.log('[useUserRole] Calling get_user_role RPC for user:', user.id);
         const { data, error } = await supabase
           .rpc('get_user_role', { _user_id: user.id });
 
+        console.log('[useUserRole] RPC response - data:', data, 'error:', error);
+
         if (error) {
-          console.error('Error fetching role:', error);
+          console.error('[useUserRole] Error fetching role:', error);
           setRole('user');
         } else {
-          setRole((data as AppRole) || 'user');
+          const fetchedRole = (data as AppRole) || 'user';
+          console.log('[useUserRole] Setting role to:', fetchedRole);
+          setRole(fetchedRole);
         }
       } catch (err) {
-        console.error('Error in useUserRole:', err);
+        console.error('[useUserRole] Error in useUserRole:', err);
         setRole('user');
       } finally {
         setIsLoading(false);
