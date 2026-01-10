@@ -71,6 +71,45 @@ export type Database = {
         }
         Relationships: []
       }
+      game_history: {
+        Row: {
+          bet_amount: number
+          created_at: string
+          game_data: Json | null
+          game_type: string
+          id: string
+          multiplier: number
+          payout: number
+          profit: number
+          result: string
+          user_id: string | null
+        }
+        Insert: {
+          bet_amount?: number
+          created_at?: string
+          game_data?: Json | null
+          game_type: string
+          id?: string
+          multiplier?: number
+          payout?: number
+          profit?: number
+          result?: string
+          user_id?: string | null
+        }
+        Update: {
+          bet_amount?: number
+          created_at?: string
+          game_data?: Json | null
+          game_type?: string
+          id?: string
+          multiplier?: number
+          payout?: number
+          profit?: number
+          result?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       game_rooms: {
         Row: {
           created_at: string

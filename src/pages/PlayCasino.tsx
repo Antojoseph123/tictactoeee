@@ -3,6 +3,8 @@ import { ArrowLeft } from "lucide-react";
 import CasinoNav from "@/components/casino/CasinoNav";
 import BalanceBar from "@/components/casino/BalanceBar";
 import { useCasinoBalance } from "@/hooks/useCasinoBalance";
+import { useGameHistory } from "@/hooks/useGameHistory";
+import { GameHistoryPanel } from "@/components/casino/GameHistoryPanel";
 
 // Casino Games
 import { DiceGame } from "@/components/casino/games/DiceGame";
@@ -25,6 +27,7 @@ const PlayCasino = () => {
   const { gameId } = useParams<{ gameId: string }>();
   const navigate = useNavigate();
   const { balance, isLoading, placeBet, addWinnings, resetBalance } = useCasinoBalance();
+  const { addHistoryEntry } = useGameHistory();
 
   const gameName = gameId ? gameNames[gameId] : null;
 
@@ -35,6 +38,8 @@ const PlayCasino = () => {
       balance,
       onBet: placeBet,
       onWin: addWinnings,
+      onGameComplete: addHistoryEntry,
+      gameType: gameId,
     };
 
     switch (gameId) {
@@ -96,6 +101,16 @@ const PlayCasino = () => {
         <div className="max-w-4xl mx-auto mt-6">
           <div className="game-shell">
             {renderGame()}
+          </div>
+        </div>
+
+        {/* Game History */}
+        <div className="max-w-4xl mx-auto mt-6">
+          <div className="bg-card border border-border rounded-xl p-4">
+            <h3 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wide">
+              Recent Bets
+            </h3>
+            <GameHistoryPanel gameType={gameId} maxHeight="250px" />
           </div>
         </div>
       </main>

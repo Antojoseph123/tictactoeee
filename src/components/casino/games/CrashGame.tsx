@@ -2,14 +2,17 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { BetControls } from '../BetControls';
+import type { GameHistoryEntry } from '@/hooks/useGameHistory';
 
 interface CrashGameProps {
   balance: number;
   onBet: (amount: number) => Promise<boolean>;
   onWin: (amount: number) => void;
+  onGameComplete?: (entry: GameHistoryEntry) => Promise<unknown>;
+  gameType?: string;
 }
 
-export const CrashGame = ({ balance, onBet, onWin }: CrashGameProps) => {
+export const CrashGame = ({ balance, onBet, onWin, onGameComplete, gameType = 'crash' }: CrashGameProps) => {
   const [multiplier, setMultiplier] = useState(1.0);
   const [gameState, setGameState] = useState<'waiting' | 'running' | 'crashed'>('waiting');
   const [betAmount, setBetAmount] = useState(5);
@@ -18,6 +21,7 @@ export const CrashGame = ({ balance, onBet, onWin }: CrashGameProps) => {
   const [cashOutMultiplier, setCashOutMultiplier] = useState<number | null>(null);
   const [crashPoint, setCrashPoint] = useState(0);
   const [history, setHistory] = useState<number[]>([]);
+  const [currentBetAmount, setCurrentBetAmount] = useState(0);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const generateCrashPoint = () => {
@@ -35,6 +39,7 @@ export const CrashGame = ({ balance, onBet, onWin }: CrashGameProps) => {
     setCashOutMultiplier(null);
     setMultiplier(1.0);
     setGameState('running');
+    setCurrentBetAmount(betAmount);
 
     const crash = generateCrashPoint();
     setCrashPoint(crash);
@@ -60,9 +65,35 @@ export const CrashGame = ({ balance, onBet, onWin }: CrashGameProps) => {
     setCashedOut(true);
     setCashOutMultiplier(multiplier);
     
-    const winnings = betAmount * multiplier;
+    const winnings = currentBetAmount * multiplier;
     onWin(winnings);
-  }, [gameState, cashedOut, multiplier, betAmount, onWin]);
+
+    // Record win
+    onGameComplete?.({
+      game_type: gameType,
+      bet_amount: currentBetAmount,
+      multiplier,
+      payout: winnings,
+      profit: winnings - currentBetAmount,
+      result: 'win',
+      game_data: { cashOutMultiplier: multiplier } as unknown as Record<string, unknown>,
+    });
+  }, [gameState, cashedOut, multiplier, currentBetAmount, onWin, onGameComplete, gameType]);
+
+  // Record loss when crashed without cashing out
+  useEffect(() => {
+    if (gameState === 'crashed' && hasBet && !cashedOut) {
+      onGameComplete?.({
+        game_type: gameType,
+        bet_amount: currentBetAmount,
+        multiplier: 0,
+        payout: 0,
+        profit: -currentBetAmount,
+        result: 'loss',
+        game_data: { crashPoint } as unknown as Record<string, unknown>,
+      });
+    }
+  }, [gameState, hasBet, cashedOut, currentBetAmount, crashPoint, onGameComplete, gameType]);
 
   const resetGame = () => {
     setGameState('waiting');

@@ -3,14 +3,17 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { BetControls } from '../BetControls';
 import { Slider } from '@/components/ui/slider';
+import type { GameHistoryEntry } from '@/hooks/useGameHistory';
 
 interface DiceGameProps {
   balance: number;
   onBet: (amount: number) => Promise<boolean>;
   onWin: (amount: number) => void;
+  onGameComplete?: (entry: GameHistoryEntry) => Promise<unknown>;
+  gameType?: string;
 }
 
-export const DiceGame = ({ balance, onBet, onWin }: DiceGameProps) => {
+export const DiceGame = ({ balance, onBet, onWin, onGameComplete, gameType = 'dice' }: DiceGameProps) => {
   const [target, setTarget] = useState(50);
   const [rollOver, setRollOver] = useState(true);
   const [betAmount, setBetAmount] = useState(5);
@@ -50,14 +53,28 @@ export const DiceGame = ({ balance, onBet, onWin }: DiceGameProps) => {
         setWon(isWin);
         setHistory(h => [{ result: finalResult, won: isWin }, ...h.slice(0, 9)]);
 
+        const payout = isWin ? betAmount * multiplier : 0;
+        const profit = payout - betAmount;
+
         if (isWin) {
-          onWin(betAmount * multiplier);
+          onWin(payout);
         }
+
+        // Record game history
+        onGameComplete?.({
+          game_type: gameType,
+          bet_amount: betAmount,
+          multiplier: isWin ? multiplier : 0,
+          payout,
+          profit,
+          result: isWin ? 'win' : 'loss',
+          game_data: { target, rollOver, finalResult } as unknown as Record<string, unknown>,
+        });
 
         setRolling(false);
       }
     }, rollDuration / intervals);
-  }, [betAmount, target, rollOver, multiplier, onBet, onWin]);
+  }, [betAmount, target, rollOver, multiplier, onBet, onWin, onGameComplete, gameType]);
 
   return (
     <div className="flex flex-col items-center gap-4 sm:gap-6 p-4 sm:p-6">
