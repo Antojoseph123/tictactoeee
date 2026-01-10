@@ -1,24 +1,28 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { BetControls } from '../BetControls';
 import { Bomb, Gem } from 'lucide-react';
+import type { GameHistoryEntry } from '@/hooks/useGameHistory';
 
 interface MinesGameProps {
   balance: number;
   onBet: (amount: number) => Promise<boolean>;
   onWin: (amount: number) => void;
+  onGameComplete?: (entry: GameHistoryEntry) => Promise<unknown>;
+  gameType?: string;
 }
 
 const GRID_SIZE = 25;
 
-export const MinesGame = ({ balance, onBet, onWin }: MinesGameProps) => {
+export const MinesGame = ({ balance, onBet, onWin, onGameComplete, gameType = 'mines' }: MinesGameProps) => {
   const [mineCount, setMineCount] = useState(5);
   const [betAmount, setBetAmount] = useState(5);
   const [gameState, setGameState] = useState<'betting' | 'playing' | 'won' | 'lost'>('betting');
   const [mines, setMines] = useState<number[]>([]);
   const [revealed, setRevealed] = useState<number[]>([]);
   const [currentMultiplier, setCurrentMultiplier] = useState(1);
+  const currentBetRef = useRef(0);
 
   const calculateMultiplier = (safe: number, mineCount: number): number => {
     let mult = 1;
@@ -31,6 +35,8 @@ export const MinesGame = ({ balance, onBet, onWin }: MinesGameProps) => {
   const startGame = useCallback(async () => {
     const success = await onBet(betAmount);
     if (!success) return;
+
+    currentBetRef.current = betAmount;
 
     const minePositions: number[] = [];
     while (minePositions.length < mineCount) {
@@ -52,6 +58,17 @@ export const MinesGame = ({ balance, onBet, onWin }: MinesGameProps) => {
     if (mines.includes(index)) {
       setRevealed([...revealed, index]);
       setGameState('lost');
+      
+      // Record loss
+      onGameComplete?.({
+        game_type: gameType,
+        bet_amount: currentBetRef.current,
+        multiplier: 0,
+        payout: 0,
+        profit: -currentBetRef.current,
+        result: 'loss',
+        game_data: { mineCount, revealedCount: revealed.length } as unknown as Record<string, unknown>,
+      });
       return;
     }
 
@@ -62,18 +79,41 @@ export const MinesGame = ({ balance, onBet, onWin }: MinesGameProps) => {
     setCurrentMultiplier(newMult);
 
     if (newRevealed.length === GRID_SIZE - mineCount) {
+      const winnings = currentBetRef.current * newMult;
       setGameState('won');
-      onWin(betAmount * newMult);
+      onWin(winnings);
+
+      // Record win
+      onGameComplete?.({
+        game_type: gameType,
+        bet_amount: currentBetRef.current,
+        multiplier: newMult,
+        payout: winnings,
+        profit: winnings - currentBetRef.current,
+        result: 'win',
+        game_data: { mineCount, revealedCount: newRevealed.length } as unknown as Record<string, unknown>,
+      });
     }
-  }, [gameState, revealed, mines, mineCount, betAmount, onWin]);
+  }, [gameState, revealed, mines, mineCount, onWin, onGameComplete, gameType]);
 
   const cashOut = useCallback(() => {
     if (gameState !== 'playing' || revealed.length === 0) return;
 
-    const winnings = betAmount * currentMultiplier;
+    const winnings = currentBetRef.current * currentMultiplier;
     onWin(winnings);
     setGameState('won');
-  }, [gameState, revealed.length, betAmount, currentMultiplier, onWin]);
+
+    // Record win
+    onGameComplete?.({
+      game_type: gameType,
+      bet_amount: currentBetRef.current,
+      multiplier: currentMultiplier,
+      payout: winnings,
+      profit: winnings - currentBetRef.current,
+      result: 'win',
+      game_data: { mineCount, revealedCount: revealed.length } as unknown as Record<string, unknown>,
+    });
+  }, [gameState, revealed.length, currentMultiplier, onWin, onGameComplete, gameType, mineCount]);
 
   const resetGame = () => {
     setGameState('betting');

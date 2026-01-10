@@ -10,7 +10,8 @@ import {
   Settings, 
   BarChart3,
   Home,
-  Loader2
+  Loader2,
+  History
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -46,6 +47,7 @@ const AdminLayout = () => {
     { to: '/admin/users', icon: Users, label: 'Users' },
     { to: '/admin/games', icon: Gamepad2, label: 'Games' },
     { to: '/admin/leaderboards', icon: Trophy, label: 'Leaderboards' },
+    { to: '/admin/history', icon: History, label: 'Bet History' },
     { to: '/admin/settings', icon: Settings, label: 'Settings' },
   ];
 

@@ -1,7 +1,8 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { BetControls } from '../BetControls';
+import type { GameHistoryEntry } from '@/hooks/useGameHistory';
 
 type Card = { suit: string; value: string; numValue: number };
 type GameState = 'betting' | 'playing' | 'dealer' | 'result';
@@ -36,9 +37,11 @@ interface BlackjackGameProps {
   balance: number;
   onBet: (amount: number) => Promise<boolean>;
   onWin: (amount: number) => void;
+  onGameComplete?: (entry: GameHistoryEntry) => Promise<unknown>;
+  gameType?: string;
 }
 
-export const BlackjackGame = ({ balance, onBet, onWin }: BlackjackGameProps) => {
+export const BlackjackGame = ({ balance, onBet, onWin, onGameComplete, gameType = 'blackjack' }: BlackjackGameProps) => {
   const [deck, setDeck] = useState<Card[]>([]);
   const [playerHand, setPlayerHand] = useState<Card[]>([]);
   const [dealerHand, setDealerHand] = useState<Card[]>([]);
@@ -46,6 +49,22 @@ export const BlackjackGame = ({ balance, onBet, onWin }: BlackjackGameProps) => 
   const [betAmount, setBetAmount] = useState(5);
   const [result, setResult] = useState<string>('');
   const [currentBet, setCurrentBet] = useState(0);
+  const historyRecordedRef = useRef(false);
+
+  const recordHistory = useCallback((resultType: 'win' | 'loss' | 'push', multiplier: number, payout: number, playerTotal: number, dealerTotal: number) => {
+    if (historyRecordedRef.current) return;
+    historyRecordedRef.current = true;
+
+    onGameComplete?.({
+      game_type: gameType,
+      bet_amount: currentBet,
+      multiplier,
+      payout,
+      profit: payout - currentBet,
+      result: resultType,
+      game_data: { playerTotal, dealerTotal } as unknown as Record<string, unknown>,
+    });
+  }, [currentBet, onGameComplete, gameType]);
 
   const drawCard = useCallback((currentDeck: Card[]): [Card, Card[]] => {
     const newDeck = [...currentDeck];
@@ -57,6 +76,7 @@ export const BlackjackGame = ({ balance, onBet, onWin }: BlackjackGameProps) => 
     const success = await onBet(betAmount);
     if (!success) return;
 
+    historyRecordedRef.current = false;
     setCurrentBet(betAmount);
 
     const newDeck = createDeck();
@@ -72,11 +92,28 @@ export const BlackjackGame = ({ balance, onBet, onWin }: BlackjackGameProps) => 
     if (playerTotal === 21) {
       setGameState('result');
       setResult('Blackjack!');
-      onWin(betAmount * 2.5);
+      const payout = betAmount * 2.5;
+      onWin(payout);
+      
+      // Record blackjack win
+      setTimeout(() => {
+        if (!historyRecordedRef.current) {
+          historyRecordedRef.current = true;
+          onGameComplete?.({
+            game_type: gameType,
+            bet_amount: betAmount,
+            multiplier: 2.5,
+            payout,
+            profit: payout - betAmount,
+            result: 'win',
+            game_data: { playerTotal: 21, dealerTotal: calculateHand([d1, d2]), blackjack: true } as unknown as Record<string, unknown>,
+          });
+        }
+      }, 100);
     } else {
       setGameState('playing');
     }
-  }, [betAmount, onBet, onWin]);
+  }, [betAmount, onBet, onWin, onGameComplete, gameType]);
 
   const hit = useCallback(() => {
     const [card, newDeck] = drawCard(deck);
@@ -88,10 +125,11 @@ export const BlackjackGame = ({ balance, onBet, onWin }: BlackjackGameProps) => 
     if (total > 21) {
       setGameState('result');
       setResult('Bust!');
+      recordHistory('loss', 0, 0, total, calculateHand(dealerHand));
     } else if (total === 21) {
       stand(newDeck, newHand);
     }
-  }, [deck, playerHand, drawCard]);
+  }, [deck, playerHand, drawCard, dealerHand, recordHistory]);
 
   const stand = useCallback((currentDeck?: Card[], currentPlayerHand?: Card[]) => {
     setGameState('dealer');
@@ -119,14 +157,18 @@ export const BlackjackGame = ({ balance, onBet, onWin }: BlackjackGameProps) => 
           if (finalDealerTotal > 21) {
             setResult('Dealer Busts! You Win!');
             onWin(currentBet * 2);
+            recordHistory('win', 2, currentBet * 2, playerTotal, finalDealerTotal);
           } else if (finalDealerTotal > playerTotal) {
             setResult('Dealer Wins');
+            recordHistory('loss', 0, 0, playerTotal, finalDealerTotal);
           } else if (playerTotal > finalDealerTotal) {
             setResult('You Win!');
             onWin(currentBet * 2);
+            recordHistory('win', 2, currentBet * 2, playerTotal, finalDealerTotal);
           } else {
             setResult('Push - Tie');
             onWin(currentBet);
+            recordHistory('push', 1, currentBet, playerTotal, finalDealerTotal);
           }
           setGameState('result');
         }, 300);
@@ -134,13 +176,14 @@ export const BlackjackGame = ({ balance, onBet, onWin }: BlackjackGameProps) => 
     };
 
     dealerPlay();
-  }, [dealerHand, deck, playerHand, drawCard, currentBet, onWin]);
+  }, [dealerHand, deck, playerHand, drawCard, currentBet, onWin, recordHistory]);
 
   const newRound = () => {
     setPlayerHand([]);
     setDealerHand([]);
     setGameState('betting');
     setResult('');
+    historyRecordedRef.current = false;
   };
 
   const CardComponent = ({ card, hidden = false }: { card: Card; hidden?: boolean }) => (

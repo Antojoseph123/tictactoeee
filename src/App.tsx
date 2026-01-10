@@ -16,6 +16,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminGames from "./pages/admin/AdminGames";
 import AdminLeaderboards from "./pages/admin/AdminLeaderboards";
+import AdminHistory from "./pages/admin/AdminHistory";
 import AdminSettings from "./pages/admin/AdminSettings";
 
 const queryClient = new QueryClient();
@@ -39,6 +40,7 @@ const App = () => (
               <Route path="users" element={<AdminUsers />} />
               <Route path="games" element={<AdminGames />} />
               <Route path="leaderboards" element={<AdminLeaderboards />} />
+              <Route path="history" element={<AdminHistory />} />
               <Route path="settings" element={<AdminSettings />} />
             </Route>
             

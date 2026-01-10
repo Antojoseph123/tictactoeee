@@ -1,7 +1,8 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { BetControls } from '../BetControls';
+import type { GameHistoryEntry } from '@/hooks/useGameHistory';
 
 type BetType = 'red' | 'black' | 'green' | 'odd' | 'even' | 'low' | 'high' | number;
 
@@ -12,15 +13,19 @@ interface RouletteGameProps {
   balance: number;
   onBet: (amount: number) => Promise<boolean>;
   onWin: (amount: number) => void;
+  onGameComplete?: (entry: GameHistoryEntry) => Promise<unknown>;
+  gameType?: string;
 }
 
-export const RouletteGame = ({ balance, onBet, onWin }: RouletteGameProps) => {
+export const RouletteGame = ({ balance, onBet, onWin, onGameComplete, gameType = 'roulette' }: RouletteGameProps) => {
   const [selectedBet, setSelectedBet] = useState<BetType | null>(null);
   const [betAmount, setBetAmount] = useState(5);
   const [spinning, setSpinning] = useState(false);
   const [result, setResult] = useState<number | null>(null);
   const [winAmount, setWinAmount] = useState<number | null>(null);
   const [rotation, setRotation] = useState(0);
+  const currentBetRef = useRef(0);
+  const selectedBetRef = useRef<BetType | null>(null);
 
   const getNumberColor = (num: number): 'red' | 'black' | 'green' => {
     if (num === 0) return 'green';
@@ -33,6 +38,8 @@ export const RouletteGame = ({ balance, onBet, onWin }: RouletteGameProps) => {
     const success = await onBet(betAmount);
     if (!success) return;
 
+    currentBetRef.current = betAmount;
+    selectedBetRef.current = selectedBet;
     setSpinning(true);
     setWinAmount(null);
 
@@ -49,42 +56,56 @@ export const RouletteGame = ({ balance, onBet, onWin }: RouletteGameProps) => {
       let won = false;
       let multiplier = 0;
       const color = getNumberColor(resultNum);
+      const bet = selectedBetRef.current;
 
-      if (typeof selectedBet === 'number' && selectedBet === resultNum) {
+      if (typeof bet === 'number' && bet === resultNum) {
         won = true;
         multiplier = 35;
-      } else if (selectedBet === 'red' && color === 'red') {
+      } else if (bet === 'red' && color === 'red') {
         won = true;
         multiplier = 2;
-      } else if (selectedBet === 'black' && color === 'black') {
+      } else if (bet === 'black' && color === 'black') {
         won = true;
         multiplier = 2;
-      } else if (selectedBet === 'green' && color === 'green') {
+      } else if (bet === 'green' && color === 'green') {
         won = true;
         multiplier = 35;
-      } else if (selectedBet === 'odd' && resultNum !== 0 && resultNum % 2 === 1) {
+      } else if (bet === 'odd' && resultNum !== 0 && resultNum % 2 === 1) {
         won = true;
         multiplier = 2;
-      } else if (selectedBet === 'even' && resultNum !== 0 && resultNum % 2 === 0) {
+      } else if (bet === 'even' && resultNum !== 0 && resultNum % 2 === 0) {
         won = true;
         multiplier = 2;
-      } else if (selectedBet === 'low' && resultNum >= 1 && resultNum <= 18) {
+      } else if (bet === 'low' && resultNum >= 1 && resultNum <= 18) {
         won = true;
         multiplier = 2;
-      } else if (selectedBet === 'high' && resultNum >= 19 && resultNum <= 36) {
+      } else if (bet === 'high' && resultNum >= 19 && resultNum <= 36) {
         won = true;
         multiplier = 2;
       }
+
+      const payout = won ? currentBetRef.current * multiplier : 0;
+      const profit = payout - currentBetRef.current;
 
       if (won) {
-        const winnings = betAmount * multiplier;
-        setWinAmount(winnings);
-        onWin(winnings);
+        setWinAmount(payout);
+        onWin(payout);
       }
+
+      // Record game history
+      onGameComplete?.({
+        game_type: gameType,
+        bet_amount: currentBetRef.current,
+        multiplier: won ? multiplier : 0,
+        payout,
+        profit,
+        result: won ? 'win' : 'loss',
+        game_data: { betType: bet, resultNumber: resultNum, color } as unknown as Record<string, unknown>,
+      });
 
       setSpinning(false);
     }, 4000);
-  }, [selectedBet, spinning, betAmount, rotation, onBet, onWin]);
+  }, [selectedBet, spinning, betAmount, rotation, onBet, onWin, onGameComplete, gameType]);
 
   return (
     <div className="flex flex-col items-center gap-4 sm:gap-6 p-4 sm:p-6">
