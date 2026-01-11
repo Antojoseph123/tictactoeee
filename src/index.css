@@ -7,64 +7,64 @@
 
 @layer base {
   :root {
-    /* Stake/Rainbet style - dark blue-gray */
-    --bg: 222 47% 8%;
-    --surface: 222 41% 11%;
-    --surface-elevated: 222 35% 14%;
-    --surface-hover: 222 30% 17%;
+    /* Stake.com exact dark palette */
+    --bg: 200 50% 7%;
+    --surface: 200 45% 10%;
+    --surface-elevated: 200 40% 13%;
+    --surface-hover: 200 35% 16%;
 
-    /* Primary (Stake green / action color) */
-    --primary: 142 70% 45%;
-    --primary-hover: 142 70% 50%;
-    --primary-muted: 142 50% 30%;
+    /* Primary (Stake blue/teal action color) */
+    --primary: 158 64% 52%;
+    --primary-hover: 158 64% 58%;
+    --primary-muted: 158 50% 35%;
     --primary-foreground: 0 0% 100%;
 
-    /* Accent (blue for highlights) */
+    /* Accent (orange/gold for highlights) */
     --accent: 217 91% 60%;
     --accent-muted: 217 70% 40%;
     --accent-foreground: 0 0% 100%;
 
     /* Text */
-    --text: 0 0% 95%;
-    --text-muted: 222 15% 60%;
-    --text-dim: 222 15% 40%;
+    --text: 0 0% 96%;
+    --text-muted: 200 15% 55%;
+    --text-dim: 200 15% 38%;
 
     /* Borders - very subtle */
-    --border: 222 30% 18%;
-    --border-strong: 222 25% 25%;
+    --border: 200 30% 15%;
+    --border-strong: 200 25% 22%;
 
     /* Semantic mappings for shadcn compatibility */
-    --background: 222 47% 8%;
-    --foreground: 0 0% 95%;
+    --background: 200 50% 7%;
+    --foreground: 0 0% 96%;
 
-    --card: 222 41% 11%;
-    --card-foreground: 0 0% 95%;
+    --card: 200 45% 10%;
+    --card-foreground: 0 0% 96%;
 
-    --popover: 222 41% 11%;
-    --popover-foreground: 0 0% 95%;
+    --popover: 200 45% 10%;
+    --popover-foreground: 0 0% 96%;
 
-    --secondary: 222 35% 14%;
-    --secondary-foreground: 0 0% 95%;
+    --secondary: 200 40% 13%;
+    --secondary-foreground: 0 0% 96%;
 
-    --muted: 222 35% 14%;
-    --muted-foreground: 222 15% 60%;
+    --muted: 200 40% 13%;
+    --muted-foreground: 200 15% 55%;
 
     --destructive: 0 70% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --input: 222 41% 11%;
-    --ring: 142 70% 45%;
+    --input: 200 45% 10%;
+    --ring: 158 64% 52%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 222 47% 8%;
-    --sidebar-foreground: 0 0% 95%;
-    --sidebar-primary: 142 70% 45%;
+    --sidebar-background: 200 45% 10%;
+    --sidebar-foreground: 0 0% 96%;
+    --sidebar-primary: 158 64% 52%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 222 35% 14%;
-    --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-border: 222 30% 18%;
-    --sidebar-ring: 142 70% 45%;
+    --sidebar-accent: 200 40% 13%;
+    --sidebar-accent-foreground: 0 0% 96%;
+    --sidebar-border: 200 30% 15%;
+    --sidebar-ring: 158 64% 52%;
   }
 }
 
