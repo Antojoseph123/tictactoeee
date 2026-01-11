@@ -81,8 +81,13 @@ export default {
         // Casino-specific semantic colors
         casino: {
           win: "hsl(142 70% 45%)",
-          loss: "hsl(355 78% 46%)",
-          gold: "hsl(42 65% 55%)",
+          loss: "hsl(0 72% 51%)",
+          gold: "hsl(45 93% 47%)",
+        },
+        // PARADOX theme extras
+        gold: {
+          DEFAULT: "hsl(var(--gold))",
+          muted: "hsl(var(--gold-muted))",
         },
       },
       borderRadius: {
