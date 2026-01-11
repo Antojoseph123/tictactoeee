@@ -1,9 +1,11 @@
 import { useNavigate } from "react-router-dom";
-import { Dices, TrendingUp, Bomb, Circle, Target, Spade, Home, Gamepad2, Gift, Search, Wallet, ChevronDown, Menu, X, Star, Users, Settings, HelpCircle, Globe } from "lucide-react";
+import { Dices, TrendingUp, Bomb, Circle, Target, Spade, Home, Gift, Search, Wallet, ChevronDown, Menu, X, Star, Users, HelpCircle, Crown, Gamepad2 } from "lucide-react";
 import { useCasinoBalance } from "@/hooks/useCasinoBalance";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { PromotionsCarousel } from "@/components/casino/PromotionsCarousel";
+import { LiveBetFeed } from "@/components/casino/LiveBetFeed";
 
 interface CasinoGame {
   id: string;
@@ -24,14 +26,9 @@ const games: CasinoGame[] = [
 
 const sidebarNav = [
   { icon: Home, label: "Casino", href: "/" },
-  { icon: Gift, label: "Promotions", href: "#" },
-  { icon: Star, label: "VIP Club", href: "#" },
+  { icon: Gift, label: "Promotions", href: "#promotions" },
+  { icon: Crown, label: "VIP Club", href: "/vip" },
   { icon: Users, label: "Affiliate", href: "#" },
-];
-
-const sidebarFooter = [
-  { icon: HelpCircle, label: "Live Support" },
-  { icon: Globe, label: "English" },
 ];
 
 const CasinoHome = () => {
@@ -62,7 +59,7 @@ const CasinoHome = () => {
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div 
-          className="fixed inset-0 bg-black/60 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/70 z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -73,13 +70,15 @@ const CasinoHome = () => {
         transform transition-transform lg:translate-x-0 border-r border-border
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
-        {/* Logo */}
+        {/* Logo - PARADOX */}
         <div className="h-16 flex items-center justify-between px-4 border-b border-border">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-white font-bold text-sm">S</span>
+            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary to-primary-muted flex items-center justify-center shadow-lg shadow-primary/20">
+              <span className="text-white font-black text-sm">P</span>
             </div>
-            <span className="font-bold text-lg tracking-tight">Stake</span>
+            <span className="font-black text-lg tracking-tight">
+              PARA<span className="text-primary">DOX</span>
+            </span>
           </div>
           <button 
             onClick={() => setSidebarOpen(false)}
@@ -95,9 +94,17 @@ const CasinoHome = () => {
             {sidebarNav.map((item, i) => (
               <button
                 key={item.label}
+                onClick={() => {
+                  if (item.href.startsWith('/')) {
+                    navigate(item.href);
+                  } else if (item.href.startsWith('#')) {
+                    document.getElementById(item.href.slice(1))?.scrollIntoView({ behavior: 'smooth' });
+                  }
+                  setSidebarOpen(false);
+                }}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                   i === 0 
-                    ? 'bg-surface-elevated text-text' 
+                    ? 'bg-primary/10 text-primary border border-primary/20' 
                     : 'text-text-muted hover:bg-surface-elevated hover:text-text'
                 }`}
               >
@@ -150,15 +157,10 @@ const CasinoHome = () => {
 
         {/* Footer Nav */}
         <div className="border-t border-border p-3 space-y-1">
-          {sidebarFooter.map((item) => (
-            <button
-              key={item.label}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-text-muted hover:bg-surface-elevated hover:text-text transition-colors"
-            >
-              <item.icon className="w-5 h-5" />
-              {item.label}
-            </button>
-          ))}
+          <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-text-muted hover:bg-surface-elevated hover:text-text transition-colors">
+            <HelpCircle className="w-5 h-5" />
+            Support
+          </button>
         </div>
       </aside>
 
@@ -177,26 +179,31 @@ const CasinoHome = () => {
 
             {/* Mobile logo */}
             <div className="lg:hidden flex items-center gap-2">
-              <div className="w-7 h-7 rounded-md bg-primary flex items-center justify-center">
-                <span className="text-white font-bold text-xs">S</span>
+              <div className="w-7 h-7 rounded-md bg-gradient-to-br from-primary to-primary-muted flex items-center justify-center">
+                <span className="text-white font-black text-xs">P</span>
               </div>
-              <span className="font-bold">Stake</span>
+              <span className="font-black">PARA<span className="text-primary">DOX</span></span>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
             {/* Balance */}
-            <div className="flex items-center gap-2 px-3 py-2 bg-surface rounded-lg">
+            <div className="flex items-center gap-2 px-3 py-2 bg-surface rounded-lg border border-border">
               <Wallet className="w-4 h-4 text-primary" />
               <span className="text-sm font-semibold">${balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
-              <ChevronDown className="w-3.5 h-3.5 text-text-dim" />
+              <button 
+                onClick={resetBalance}
+                className="text-[10px] text-text-dim hover:text-primary transition-colors"
+              >
+                Reset
+              </button>
             </div>
 
             {/* Auth */}
             {user ? (
               <button
                 onClick={() => navigate("/profile")}
-                className="px-4 py-2 bg-surface-elevated hover:bg-surface-hover rounded-lg text-sm font-medium transition-colors"
+                className="px-4 py-2 bg-surface-elevated hover:bg-surface-hover rounded-lg text-sm font-medium transition-colors border border-border"
               >
                 Profile
               </button>
@@ -204,7 +211,7 @@ const CasinoHome = () => {
               <>
                 <button
                   onClick={() => navigate("/auth")}
-                  className="hidden sm:block px-4 py-2 bg-surface-elevated hover:bg-surface-hover rounded-lg text-sm font-medium transition-colors"
+                  className="hidden sm:block px-4 py-2 bg-surface-elevated hover:bg-surface-hover rounded-lg text-sm font-medium transition-colors border border-border"
                 >
                   Login
                 </button>
@@ -221,119 +228,94 @@ const CasinoHome = () => {
 
         {/* Content */}
         <main className="flex-1 p-4 lg:p-6">
-          {/* Hero Section - Stake style */}
+          {/* Hero Section - PARADOX style */}
           <motion.div 
             className="mb-8"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <div className="flex flex-col lg:flex-row gap-4">
-              {/* Main hero */}
-              <div className="flex-1 relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#1a2c38] to-[#0f1923] p-6 lg:p-8">
-                <div className="relative z-10 max-w-md">
-                  <h1 className="text-2xl lg:text-4xl font-bold mb-3">
-                    World's Largest Online Casino
-                  </h1>
-                  <p className="text-text-muted mb-6">
-                    Provably fair games with instant payouts. Start with $1,000 demo balance.
-                  </p>
-                  <div className="flex flex-wrap gap-3">
-                    <button 
-                      onClick={() => navigate("/auth")}
-                      className="px-6 py-3 bg-primary hover:bg-primary-hover rounded-lg text-sm font-semibold text-white transition-colors"
-                    >
-                      Register
-                    </button>
-                    <div className="flex items-center gap-2 text-xs text-text-dim">
-                      <span>Or sign up with</span>
-                      <div className="flex gap-2">
-                        <div className="w-8 h-8 rounded-lg bg-surface flex items-center justify-center hover:bg-surface-elevated cursor-pointer transition-colors">
-                          <span className="text-lg">G</span>
-                        </div>
-                      </div>
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-surface via-surface to-surface-elevated border border-border">
+              {/* Red glow effect */}
+              <div className="absolute -top-20 -right-20 w-64 h-64 bg-primary/20 rounded-full blur-3xl" />
+              <div className="absolute -bottom-20 -left-20 w-48 h-48 bg-primary/10 rounded-full blur-3xl" />
+              
+              <div className="relative p-6 lg:p-10">
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                  <div className="max-w-xl">
+                    <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold mb-4">
+                      <Gamepad2 className="w-3.5 h-3.5" />
+                      PARADOX CASINO
+                    </div>
+                    <h1 className="text-3xl lg:text-5xl font-black mb-4 leading-tight">
+                      Enter the <span className="text-primary">Paradox</span>
+                    </h1>
+                    <p className="text-text-muted mb-6 text-lg">
+                      Where risk meets reward. Provably fair games with instant payouts.
+                    </p>
+                    <div className="flex flex-wrap gap-3">
+                      <button 
+                        onClick={() => handleGameSelect('dice')}
+                        className="px-6 py-3 bg-primary hover:bg-primary-hover rounded-xl text-sm font-bold text-white transition-all shadow-lg shadow-primary/25 hover:shadow-primary/40"
+                      >
+                        Play Now
+                      </button>
+                      <button 
+                        onClick={() => navigate("/vip")}
+                        className="px-6 py-3 bg-surface-elevated hover:bg-surface-hover rounded-xl text-sm font-medium border border-border transition-colors flex items-center gap-2"
+                      >
+                        <Crown className="w-4 h-4 text-gold" />
+                        VIP Club
+                      </button>
                     </div>
                   </div>
-                </div>
-                {/* Background decoration */}
-                <div className="absolute right-0 top-0 bottom-0 w-1/2 opacity-20">
-                  <div className="absolute inset-0 bg-gradient-to-l from-primary/30 to-transparent" />
-                </div>
-              </div>
 
-              {/* Side cards - like Casino/Sports on Stake */}
-              <div className="flex lg:flex-col gap-4 lg:w-64">
-                <div 
-                  onClick={() => handleGameSelect('dice')}
-                  className="flex-1 relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 p-4 cursor-pointer hover:border-primary/40 transition-colors group"
-                >
-                  <div className="flex items-center gap-2 mb-2">
-                    <Gamepad2 className="w-5 h-5 text-primary" />
-                    <span className="font-semibold">Casino</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-text-muted">
-                    <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                    <span>{games.reduce((acc, g) => acc + (g.players || 0), 0).toLocaleString()} playing</span>
-                  </div>
-                </div>
-                <div className="flex-1 relative overflow-hidden rounded-xl bg-gradient-to-br from-accent/20 to-accent/5 border border-accent/20 p-4 cursor-pointer hover:border-accent/40 transition-colors">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Target className="w-5 h-5 text-accent" />
-                    <span className="font-semibold">Sports</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-text-muted">
-                    <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-                    <span>Coming soon</span>
+                  {/* Stats */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="p-4 rounded-xl bg-surface-elevated/50 border border-border">
+                      <p className="text-2xl font-black text-primary">{games.reduce((acc, g) => acc + (g.players || 0), 0)}+</p>
+                      <p className="text-xs text-text-dim">Playing now</p>
+                    </div>
+                    <div className="p-4 rounded-xl bg-surface-elevated/50 border border-border">
+                      <p className="text-2xl font-black text-gold">$100</p>
+                      <p className="text-xs text-text-dim">Demo balance</p>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </motion.div>
 
-          {/* Search bar - Stake style */}
+          {/* Search bar */}
           <div className="flex items-center gap-4 mb-6">
-            <div className="flex items-center">
-              <button className="px-4 py-2 bg-surface-elevated rounded-lg text-sm font-medium flex items-center gap-2">
-                Casino
-                <ChevronDown className="w-4 h-4" />
-              </button>
-            </div>
             <div className="flex-1 relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-dim" />
               <input 
                 type="text"
-                placeholder="Search your game"
+                placeholder="Search games..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-11 pl-11 pr-4 bg-surface rounded-lg text-sm outline-none placeholder:text-text-dim focus:ring-1 focus:ring-primary/50 transition-all"
+                className="w-full h-11 pl-11 pr-4 bg-surface rounded-xl text-sm outline-none border border-border placeholder:text-text-dim focus:border-primary/50 transition-all"
               />
             </div>
           </div>
 
-          {/* Trending Games Section */}
+          {/* Games Section */}
           <section className="mb-8">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-5 h-5 text-primary" />
-                <h2 className="text-lg font-semibold">Trending Games</h2>
-              </div>
-              <div className="flex gap-2">
-                <button className="w-8 h-8 rounded-lg bg-surface hover:bg-surface-elevated flex items-center justify-center transition-colors">
-                  <ChevronDown className="w-4 h-4 rotate-90" />
-                </button>
-                <button className="w-8 h-8 rounded-lg bg-surface hover:bg-surface-elevated flex items-center justify-center transition-colors">
-                  <ChevronDown className="w-4 h-4 -rotate-90" />
-                </button>
+                <h2 className="text-lg font-bold">Games</h2>
               </div>
             </div>
 
-            {/* Games grid - Stake style cards */}
+            {/* Games grid */}
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
               {filteredGames.map((game, index) => (
                 <motion.button
                   key={game.id}
                   onClick={() => handleGameSelect(game.id)}
-                  className="group relative aspect-[3/4] rounded-xl overflow-hidden bg-gradient-to-br from-surface-elevated to-surface"
+                  className="group relative aspect-[3/4] rounded-xl overflow-hidden bg-surface border border-border hover:border-primary/50 transition-all"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: index * 0.05 }}
@@ -341,100 +323,53 @@ const CasinoHome = () => {
                 >
                   {/* Game icon/visual */}
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className={`w-16 h-16 rounded-2xl flex items-center justify-center ${
-                      game.category === 'originals' 
-                        ? 'bg-gradient-to-br from-primary/30 to-primary/10' 
-                        : 'bg-gradient-to-br from-accent/30 to-accent/10'
-                    }`}>
-                      <game.icon className={`w-8 h-8 ${
-                        game.category === 'originals' ? 'text-primary' : 'text-accent'
-                      }`} />
+                    <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5 group-hover:from-primary/30 group-hover:to-primary/10 transition-all">
+                      <game.icon className="w-8 h-8 text-primary" />
                     </div>
                   </div>
 
-                  {/* Stake badge */}
+                  {/* Badge */}
                   <div className="absolute top-2 left-2">
-                    <div className="w-5 h-5 rounded bg-primary/20 flex items-center justify-center">
-                      <span className="text-primary text-[10px] font-bold">S</span>
+                    <div className="w-5 h-5 rounded bg-primary/20 flex items-center justify-center border border-primary/30">
+                      <span className="text-primary text-[10px] font-black">P</span>
                     </div>
                   </div>
 
                   {/* Bottom info */}
-                  <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/80 to-transparent">
-                    <h3 className="font-semibold text-sm mb-0.5 text-white">{game.name}</h3>
+                  <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/90 via-black/50 to-transparent">
+                    <h3 className="font-bold text-sm mb-0.5 text-white">{game.name}</h3>
                     <p className="text-[10px] text-text-muted uppercase tracking-wider">{game.category}</p>
                   </div>
 
                   {/* Players count */}
                   <div className="absolute bottom-3 right-3 flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                    <span className="text-[10px] text-text-muted">{game.players} playing</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                    <span className="text-[10px] text-text-muted">{game.players}</span>
                   </div>
 
                   {/* Hover overlay */}
-                  <div className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </motion.button>
               ))}
             </div>
           </section>
 
-          {/* Recent Activity */}
-          <section className="mb-8">
-            <div className="flex items-center gap-2 mb-4">
-              <Users className="w-5 h-5 text-primary" />
-              <h2 className="text-lg font-semibold">Live Bets</h2>
-            </div>
+          {/* Promotions */}
+          <div id="promotions">
+            <PromotionsCarousel />
+          </div>
 
-            <div className="bg-surface rounded-xl overflow-hidden">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border">
-                    <th className="text-left text-text-dim font-medium px-4 py-3">Game</th>
-                    <th className="text-left text-text-dim font-medium px-4 py-3 hidden sm:table-cell">Player</th>
-                    <th className="text-right text-text-dim font-medium px-4 py-3">Bet</th>
-                    <th className="text-right text-text-dim font-medium px-4 py-3">Multiplier</th>
-                    <th className="text-right text-text-dim font-medium px-4 py-3">Payout</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[
-                    { game: "Dice", player: "Hidden", bet: 50, multiplier: 1.97, payout: 98.50, win: true },
-                    { game: "Crash", player: "Hidden", bet: 100, multiplier: 0, payout: 0, win: false },
-                    { game: "Mines", player: "Hidden", bet: 25, multiplier: 2.5, payout: 62.50, win: true },
-                    { game: "Plinko", player: "Hidden", bet: 10, multiplier: 0, payout: 0, win: false },
-                    { game: "Blackjack", player: "Hidden", bet: 200, multiplier: 2, payout: 400, win: true },
-                  ].map((bet, i) => (
-                    <tr key={i} className="border-b border-border last:border-0 hover:bg-surface-elevated/50 transition-colors">
-                      <td className="px-4 py-3">
-                        <span className="font-medium">{bet.game}</span>
-                      </td>
-                      <td className="px-4 py-3 text-text-muted hidden sm:table-cell">{bet.player}</td>
-                      <td className="px-4 py-3 text-right font-medium">${bet.bet.toFixed(2)}</td>
-                      <td className="px-4 py-3 text-right">
-                        <span className={bet.win ? 'text-primary' : 'text-text-dim'}>
-                          {bet.win ? `${bet.multiplier.toFixed(2)}x` : '-'}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        <span className={bet.win ? 'text-primary font-medium' : 'text-text-dim'}>
-                          {bet.win ? `$${bet.payout.toFixed(2)}` : '-'}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
+          {/* Live Bets */}
+          <LiveBetFeed />
 
           {/* Footer */}
           <footer className="py-8 border-t border-border">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded bg-primary flex items-center justify-center">
-                  <span className="text-white font-bold text-xs">S</span>
+                <div className="w-6 h-6 rounded bg-gradient-to-br from-primary to-primary-muted flex items-center justify-center">
+                  <span className="text-white font-black text-xs">P</span>
                 </div>
-                <span className="text-sm text-text-muted">© 2024 Stake Clone</span>
+                <span className="text-sm font-bold">PARA<span className="text-primary">DOX</span></span>
               </div>
               <p className="text-sm text-text-dim">
                 Made with ❤️ by <span className="text-primary font-medium">Albin Antony</span>

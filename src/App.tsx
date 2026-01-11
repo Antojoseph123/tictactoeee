@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import CasinoHome from "./pages/CasinoHome";
 import PlayCasino from "./pages/PlayCasino";
+import VIPClub from "./pages/VIPClub";
 import Auth from "./pages/Auth";
 import ProfilePage from "./pages/ProfilePage";
 import NotFound from "./pages/NotFound";
@@ -30,6 +31,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<CasinoHome />} />
             <Route path="/play/:gameId" element={<PlayCasino />} />
+            <Route path="/vip" element={<VIPClub />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/auth" element={<Auth />} />
             
