@@ -1,11 +1,13 @@
 import { useNavigate } from "react-router-dom";
-import { Dices, TrendingUp, Bomb, Circle, Target, Spade, Home, Gift, Search, Wallet, ChevronDown, Menu, X, Star, Users, HelpCircle, Crown, Gamepad2 } from "lucide-react";
+import { Dices, TrendingUp, Bomb, Circle, Target, Spade, Home, Gift, Search, Wallet, Menu, X, Users, HelpCircle, Crown, Gamepad2, Disc, Grid3X3, Zap, Settings, History } from "lucide-react";
 import { useCasinoBalance } from "@/hooks/useCasinoBalance";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserRole } from "@/hooks/useUserRole";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { PromotionsCarousel } from "@/components/casino/PromotionsCarousel";
 import { LiveBetFeed } from "@/components/casino/LiveBetFeed";
+import { toast } from "sonner";
 
 interface CasinoGame {
   id: string;
@@ -13,38 +15,68 @@ interface CasinoGame {
   icon: React.ElementType;
   category: string;
   players?: number;
+  isNew?: boolean;
+  isHot?: boolean;
 }
 
 const games: CasinoGame[] = [
-  { id: "dice", name: "Dice", icon: Dices, category: "originals", players: 142 },
-  { id: "crash", name: "Crash", icon: TrendingUp, category: "originals", players: 89 },
+  { id: "dice", name: "Dice", icon: Dices, category: "originals", players: 142, isHot: true },
+  { id: "crash", name: "Crash", icon: TrendingUp, category: "originals", players: 89, isHot: true },
   { id: "mines", name: "Mines", icon: Bomb, category: "originals", players: 56 },
   { id: "plinko", name: "Plinko", icon: Circle, category: "originals", players: 34 },
+  { id: "limbo", name: "Limbo", icon: Zap, category: "originals", players: 67, isNew: true },
+  { id: "slots", name: "Slots", icon: Gamepad2, category: "slots", players: 203, isNew: true },
+  { id: "wheel", name: "Wheel", icon: Disc, category: "slots", players: 98, isNew: true },
+  { id: "keno", name: "Keno", icon: Grid3X3, category: "slots", players: 45, isNew: true },
   { id: "roulette", name: "Roulette", icon: Target, category: "table", players: 78 },
-  { id: "blackjack", name: "Blackjack", icon: Spade, category: "table", players: 112 },
+  { id: "blackjack", name: "Blackjack", icon: Spade, category: "table", players: 112, isHot: true },
 ];
 
 const sidebarNav = [
   { icon: Home, label: "Casino", href: "/" },
   { icon: Gift, label: "Promotions", href: "#promotions" },
   { icon: Crown, label: "VIP Club", href: "/vip" },
-  { icon: Users, label: "Affiliate", href: "#" },
+  { icon: Users, label: "Affiliate", href: "/affiliate", comingSoon: true },
 ];
 
 const CasinoHome = () => {
   const navigate = useNavigate();
   const { balance, isLoading, resetBalance } = useCasinoBalance();
   const { user } = useAuth();
+  const { role } = useUserRole();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
   const handleGameSelect = (gameId: string) => {
     navigate(`/play/${gameId}`);
   };
 
-  const filteredGames = searchQuery 
-    ? games.filter(g => g.name.toLowerCase().includes(searchQuery.toLowerCase()))
-    : games;
+  const handleNavClick = (item: typeof sidebarNav[0]) => {
+    if (item.comingSoon) {
+      toast.info("Coming soon!", { description: `${item.label} will be available soon.` });
+      return;
+    }
+    if (item.href.startsWith('/')) {
+      navigate(item.href);
+    } else if (item.href.startsWith('#')) {
+      document.getElementById(item.href.slice(1))?.scrollIntoView({ behavior: 'smooth' });
+    }
+    setSidebarOpen(false);
+  };
+
+  const filteredGames = games.filter(g => {
+    const matchesSearch = !searchQuery || g.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = !activeCategory || g.category === activeCategory;
+    return matchesSearch && matchesCategory;
+  });
+
+  const categories = [
+    { id: null, label: "All" },
+    { id: "originals", label: "Originals" },
+    { id: "slots", label: "Slots" },
+    { id: "table", label: "Table" },
+  ];
 
   if (isLoading) {
     return (
@@ -94,14 +126,7 @@ const CasinoHome = () => {
             {sidebarNav.map((item, i) => (
               <button
                 key={item.label}
-                onClick={() => {
-                  if (item.href.startsWith('/')) {
-                    navigate(item.href);
-                  } else if (item.href.startsWith('#')) {
-                    document.getElementById(item.href.slice(1))?.scrollIntoView({ behavior: 'smooth' });
-                  }
-                  setSidebarOpen(false);
-                }}
+                onClick={() => handleNavClick(item)}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                   i === 0 
                     ? 'bg-primary/10 text-primary border border-primary/20' 
@@ -110,9 +135,26 @@ const CasinoHome = () => {
               >
                 <item.icon className="w-5 h-5" />
                 {item.label}
+                {item.comingSoon && (
+                  <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded bg-surface-elevated text-text-dim">Soon</span>
+                )}
               </button>
             ))}
           </nav>
+
+          {/* Admin Link */}
+          {role === 'admin' && (
+            <>
+              <div className="h-px bg-border my-4" />
+              <button
+                onClick={() => navigate('/admin')}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gold hover:bg-gold/10 transition-colors"
+              >
+                <Settings className="w-5 h-5" />
+                Admin Panel
+              </button>
+            </>
+          )}
 
           {/* Divider */}
           <div className="h-px bg-border my-4" />
@@ -131,6 +173,27 @@ const CasinoHome = () => {
                 >
                   <game.icon className="w-5 h-5" />
                   {game.name}
+                  {game.isNew && <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded bg-primary/20 text-primary font-bold">NEW</span>}
+                  {game.isHot && !game.isNew && <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded bg-orange-500/20 text-orange-400 font-bold">HOT</span>}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-4">
+            <p className="text-xs text-text-dim uppercase tracking-wider px-3 mb-2 font-medium">
+              Slots & Lottery
+            </p>
+            <div className="space-y-1">
+              {games.filter(g => g.category === 'slots').map((game) => (
+                <button
+                  key={game.id}
+                  onClick={() => handleGameSelect(game.id)}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-text-muted hover:bg-surface-elevated hover:text-text transition-colors"
+                >
+                  <game.icon className="w-5 h-5" />
+                  {game.name}
+                  {game.isNew && <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded bg-primary/20 text-primary font-bold">NEW</span>}
                 </button>
               ))}
             </div>
@@ -149,6 +212,7 @@ const CasinoHome = () => {
                 >
                   <game.icon className="w-5 h-5" />
                   {game.name}
+                  {game.isHot && <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded bg-orange-500/20 text-orange-400 font-bold">HOT</span>}
                 </button>
               ))}
             </div>
@@ -157,7 +221,19 @@ const CasinoHome = () => {
 
         {/* Footer Nav */}
         <div className="border-t border-border p-3 space-y-1">
-          <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-text-muted hover:bg-surface-elevated hover:text-text transition-colors">
+          {user && (
+            <button 
+              onClick={() => navigate('/profile')}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-text-muted hover:bg-surface-elevated hover:text-text transition-colors"
+            >
+              <History className="w-5 h-5" />
+              My History
+            </button>
+          )}
+          <button 
+            onClick={() => toast.info("Support", { description: "Contact support@paradox.casino" })}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-text-muted hover:bg-surface-elevated hover:text-text transition-colors"
+          >
             <HelpCircle className="w-5 h-5" />
             Support
           </button>

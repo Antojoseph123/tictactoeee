@@ -13,6 +13,10 @@ import { MinesGame } from "@/components/casino/games/MinesGame";
 import { RouletteGame } from "@/components/casino/games/RouletteGame";
 import { BlackjackGame } from "@/components/casino/games/BlackjackGame";
 import { PlinkoGame } from "@/components/casino/games/PlinkoGame";
+import { SlotsGame } from "@/components/casino/games/SlotsGame";
+import { WheelGame } from "@/components/casino/games/WheelGame";
+import { KenoGame } from "@/components/casino/games/KenoGame";
+import { LimboGame } from "@/components/casino/games/LimboGame";
 
 const gameNames: Record<string, string> = {
   dice: "Dice",
@@ -21,6 +25,10 @@ const gameNames: Record<string, string> = {
   plinko: "Plinko",
   roulette: "Roulette",
   blackjack: "Blackjack",
+  slots: "Slots",
+  wheel: "Wheel of Fortune",
+  keno: "Keno",
+  limbo: "Limbo",
 };
 
 const PlayCasino = () => {
@@ -55,10 +63,18 @@ const PlayCasino = () => {
         return <RouletteGame {...props} />;
       case "blackjack":
         return <BlackjackGame {...props} />;
+      case "slots":
+        return <SlotsGame {...props} />;
+      case "wheel":
+        return <WheelGame {...props} />;
+      case "keno":
+        return <KenoGame {...props} />;
+      case "limbo":
+        return <LimboGame {...props} />;
       default:
         return (
           <div className="p-12 text-center">
-            <p className="text-muted-foreground">Game loading...</p>
+            <p className="text-muted-foreground">Game not found</p>
           </div>
         );
     }
